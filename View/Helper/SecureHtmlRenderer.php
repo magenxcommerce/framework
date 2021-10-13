@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Magento\Framework\View\Helper;
 
+use Magento\Framework\Api\SimpleDataObjectConverter;
 use Magento\Framework\Math\Random;
 use Magento\Framework\View\Helper\SecureHtmlRender\EventHandlerData;
 use Magento\Framework\View\Helper\SecureHtmlRender\HtmlRenderer;
@@ -104,27 +105,23 @@ class SecureHtmlRenderer
         }
 
         $random = $this->random->getRandomString(10);
-        $listenerFunction = 'eventListener' . $random;
-        $elementName = 'listenedElement' . $random;
+        $listenerFunction = 'eventListener' .$random;
+        $elementName = 'listenedElement' .$random;
         $script = <<<script
             function {$listenerFunction} () {
                 {$attributeJavascript};
             }
-            var {$elementName}Array = document.querySelectorAll("{$elementSelector}");
-            if({$elementName}Array.length !== 'undefined'){
-                {$elementName}Array.forEach(function(element) {
-                    if (element) {
-                        element.{$eventName} = function (event) {
-                            var targetElement = element;
-                            if (event && event.target) {
-                                targetElement = event.target;
-                            }
-                            {$listenerFunction}.apply(targetElement);
-                        };
+            var {$elementName} = document.querySelector("{$elementSelector}");
+            if ({$elementName}) {
+                {$elementName}.{$eventName} = function (event) {
+                    var targetElement = {$elementName};
+                    if (event && event.target) {
+                        targetElement = event.target;
                     }
-                });
+                    {$listenerFunction}.apply(targetElement);
+                }
             }
-        script;
+script;
 
         return $this->renderTag('script', ['type' => 'text/javascript'], $script, false);
     }
@@ -143,7 +140,7 @@ class SecureHtmlRenderer
             throw new \InvalidArgumentException('Invalid style data given');
         }
 
-        $elementVariable = 'elem' . $this->random->getRandomString(8);
+        $elementVariable = 'elem' .$this->random->getRandomString(8);
         /** @var string[] $styles */
         $stylesAssignments = '';
         foreach ($stylePairs as $stylePair) {
@@ -165,7 +162,7 @@ class SecureHtmlRenderer
             'script',
             ['type' => 'text/javascript'],
             "var $elementVariable = document.querySelector('$selector');\n"
-            . "if ($elementVariable) {\n{$stylesAssignments}}",
+            ."if ($elementVariable) {\n{$stylesAssignments}}",
             false
         );
     }

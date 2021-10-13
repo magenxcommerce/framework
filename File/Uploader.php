@@ -219,7 +219,6 @@ class Uploader
         Filesystem $filesystem = null
     ) {
         $this->directoryList = $directoryList ?: ObjectManager::getInstance()->get(DirectoryList::class);
-        $this->targetDirectory = $targetDirectory ?: ObjectManager::getInstance()->get(TargetDirectory::class);
 
         $this->filesystem = $filesystem ?: ObjectManager::getInstance()->get(FileSystem::class);
         $this->_setUploadFileId($fileId);
@@ -231,6 +230,7 @@ class Uploader
         }
         $this->fileMime = $fileMime ?: ObjectManager::getInstance()->get(Mime::class);
         $this->driverPool = $driverPool ?: ObjectManager::getInstance()->get(DriverPool::class);
+        $this->targetDirectory = $targetDirectory ?: ObjectManager::getInstance()->get(TargetDirectory::class);
     }
 
     /**
@@ -496,7 +496,7 @@ class Uploader
         $fileInfo['extension'] = $fileInfo['extension'] ?? '';
 
         // account for excessively long filenames that cannot be stored completely in database
-        $maxFilenameLength = 90;
+        $maxFilenameLength = 200;
 
         if (strlen($fileInfo['basename']) > $maxFilenameLength) {
             throw new \LengthException(
@@ -709,7 +709,6 @@ class Uploader
      * @param array $fileId
      * @return void
      * @throws \InvalidArgumentException
-     * @throws FileSystemException
      */
     private function validateFileId(array $fileId): void
     {
@@ -731,16 +730,14 @@ class Uploader
                 ];
 
                 foreach ($allowedFolders as $allowedFolder) {
-                    $dir = $this->targetDirectory->getDirectoryReadByPath($allowedFolder);
-                    if ($dir->isExist($tmpName)) {
+                    if (stripos($tmpName, $allowedFolder) === 0) {
                         $isValid = true;
                         break;
                     }
                 }
 
                 foreach ($disallowedFolders as $disallowedFolder) {
-                    $dir = $this->targetDirectory->getDirectoryReadByPath($disallowedFolder);
-                    if ($dir->isExist($tmpName)) {
+                    if (stripos($tmpName, $disallowedFolder) === 0) {
                         $isValid = false;
                         break;
                     }

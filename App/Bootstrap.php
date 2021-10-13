@@ -13,7 +13,6 @@ use Magento\Framework\Autoload\AutoloaderRegistry;
 use Magento\Framework\Autoload\Populator;
 use Magento\Framework\Config\File\ConfigFilePool;
 use Magento\Framework\Filesystem\DriverPool;
-use Magento\Framework\HTTP\PhpEnvironment\Response;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -387,7 +386,7 @@ class Bootstrap
         $handler = new ErrorHandler();
         set_error_handler([$handler, 'handler']);
     }
-
+    
     /**
      * Getter for error code
      *
@@ -429,13 +428,9 @@ class Bootstrap
      */
     protected function terminate(\Throwable $e)
     {
-        /** @var Response $response */
-        $response = $this->objectManager->get(Response::class);
-        $response->clearHeaders();
-        $response->setHttpResponseCode(500);
-        $response->setHeader('Content-Type', 'text/plain');
+
         if ($this->isDeveloperMode()) {
-            $response->setBody($e);
+            echo $e;
         } else {
             $message = "An error has happened during application run. See exception log for details.\n";
             try {
@@ -446,9 +441,8 @@ class Bootstrap
             } catch (\Exception $e) {
                 $message .= "Could not write error message to log. Please use developer mode to see the message.\n";
             }
-            $response->setBody($message);
+            echo $message;
         }
-        $response->sendResponse();
         exit(1);
     }
     // phpcs:enable

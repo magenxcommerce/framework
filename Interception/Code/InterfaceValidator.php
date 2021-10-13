@@ -8,9 +8,6 @@ namespace Magento\Framework\Interception\Code;
 use Magento\Framework\Code\Reader\ArgumentsReader;
 use Magento\Framework\Exception\ValidatorException;
 use Magento\Framework\Phrase;
-use ReflectionClass;
-use ReflectionException;
-use ReflectionParameter;
 
 /**
  * @SuppressWarnings(PHPMD.NPathComplexity)
@@ -165,30 +162,14 @@ class InterfaceValidator
     /**
      * Get parameters type
      *
-     * @param ReflectionParameter $parameter
+     * @param \ReflectionParameter $parameter
      *
      * @return string
      */
-    protected function getParametersType(ReflectionParameter $parameter)
+    protected function getParametersType(\ReflectionParameter $parameter)
     {
-        $parameterClass = $this->getParameterClass($parameter);
+        $parameterClass = $parameter->getClass();
         return $parameterClass ? '\\' . $parameterClass->getName() : ($parameter->isArray() ? 'array' : null);
-    }
-
-    /**
-     * Get class by reflection parameter
-     *
-     * @param ReflectionParameter $reflectionParameter
-     * @return ReflectionClass|null
-     * @throws ReflectionException
-     */
-    private function getParameterClass(ReflectionParameter $reflectionParameter): ?ReflectionClass
-    {
-        $parameterType = $reflectionParameter->getType();
-
-        return $parameterType && !$parameterType->isBuiltin()
-            ? new ReflectionClass($parameterType->getName())
-            : null;
     }
 
     /**

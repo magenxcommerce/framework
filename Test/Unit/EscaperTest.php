@@ -13,7 +13,6 @@ use Magento\Framework\Translate\Inline;
 use Magento\Framework\ZendEscaper;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
-use Magento\Framework\Translate\Inline\StateInterface;
 
 /**
  * \Magento\Framework\Escaper test case
@@ -24,11 +23,6 @@ class EscaperTest extends TestCase
      * @var Escaper
      */
     protected $escaper;
-
-    /**
-     * @var ObjectManager
-     */
-    private $objectManagerHelper;
 
     /**
      * @var ZendEscaper
@@ -50,14 +44,14 @@ class EscaperTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->objectManagerHelper = new ObjectManager($this);
+        $objectManagerHelper = new ObjectManager($this);
         $this->escaper = new Escaper();
         $this->zendEscaper = new ZendEscaper();
-        $this->translateInline = $this->objectManagerHelper->getObject(Inline::class);
+        $this->translateInline = $objectManagerHelper->getObject(Inline::class);
         $this->loggerMock = $this->getMockForAbstractClass(LoggerInterface::class);
-        $this->objectManagerHelper->setBackwardCompatibleProperty($this->escaper, 'escaper', $this->zendEscaper);
-        $this->objectManagerHelper->setBackwardCompatibleProperty($this->escaper, 'logger', $this->loggerMock);
-        $this->objectManagerHelper->setBackwardCompatibleProperty(
+        $objectManagerHelper->setBackwardCompatibleProperty($this->escaper, 'escaper', $this->zendEscaper);
+        $objectManagerHelper->setBackwardCompatibleProperty($this->escaper, 'logger', $this->loggerMock);
+        $objectManagerHelper->setBackwardCompatibleProperty(
             $this->escaper,
             'translateInline',
             $this->translateInline
@@ -173,58 +167,6 @@ class EscaperTest extends TestCase
     {
         $actual = $this->escaper->escapeHtml($data, $allowedTags);
         $this->assertEquals($expected, $actual);
-    }
-
-    /**
-     * Tests escapeHtmlAttr method when Inline translate is configured.
-     *
-     * @param string $input
-     * @param string $output
-     * @return void
-     * @dataProvider escapeHtmlAttributeWithInlineTranslateEnabledDataProvider
-     */
-    public function testEscapeHtmlAttributeWithInlineTranslateEnabled(string $input, string $output): void
-    {
-        $this->objectManagerHelper->setBackwardCompatibleProperty(
-            $this->translateInline,
-            'isAllowed',
-            true
-        );
-        $stateMock = $this->createMock(StateInterface::class);
-        $stateMock->method('isEnabled')
-            ->willReturn(true);
-        $this->objectManagerHelper->setBackwardCompatibleProperty(
-            $this->translateInline,
-            'state',
-            $stateMock
-        );
-
-
-        $actual = $this->escaper->escapeHtmlAttr($input);
-        $this->assertEquals($output, $actual);
-    }
-
-    /**
-     * Data provider for escapeHtmlAttrWithInline test.
-     *
-     * @return array
-     */
-    public function escapeHtmlAttributeWithInlineTranslateEnabledDataProvider(): array
-    {
-        return [
-            [
-                '{{{Search entire store here...}}}',
-                '{{{Search&#x20;entire&#x20;store&#x20;here...}}}',
-            ],
-            [
-                '{{{Product search}}{{Translated to language}}{{themeMagento/Luma}}}',
-                '{{{Product&#x20;search}}{{Translated&#x20;to&#x20;language}}{{themeMagento&#x2F;Luma}}}',
-            ],
-            [
-                'Simple string',
-                'Simple&#x20;string',
-            ],
-        ];
     }
 
     /**

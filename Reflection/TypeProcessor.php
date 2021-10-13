@@ -851,11 +851,9 @@ class TypeProcessor
     {
         $methodName = $methodReflection->getName();
         $returnAnnotations = $this->getReturnFromDocBlock($methodReflection);
-
         if (empty($returnAnnotations)) {
-            $classReflection = $methodReflection->getDeclaringClass();
             // method can inherit doc block from implemented interface, like for interceptors
-            $implemented = $classReflection->getInterfaces();
+            $implemented = $methodReflection->getDeclaringClass()->getInterfaces();
             /** @var ClassReflection $parentClassReflection */
             foreach ($implemented as $parentClassReflection) {
                 if ($parentClassReflection->hasMethod($methodName)) {
@@ -865,28 +863,14 @@ class TypeProcessor
                     break;
                 }
             }
-
+            // throw an exception if even implemented interface doesn't have return annotations
             if (empty($returnAnnotations)) {
-                while ($classReflection->getParentClass()) {
-                    $classReflection = $classReflection->getParentClass();
-                    if ($classReflection->hasMethod($methodName)) {
-                        $returnAnnotations = $this->getReturnFromDocBlock(
-                            $classReflection->getMethod($methodName)
-                        );
-                        break;
-                    }
-                }
-
-                // throw an exception if even implemented interface doesn't have return annotations
-                if (empty($returnAnnotations)) {
-                    throw new \InvalidArgumentException(
-                        "Method's return type must be specified using @return annotation. "
-                        . "See {$methodReflection->getDeclaringClass()->getName()}::{$methodName}()"
-                    );
-                }
+                throw new \InvalidArgumentException(
+                    "Method's return type must be specified using @return annotation. "
+                    . "See {$methodReflection->getDeclaringClass()->getName()}::{$methodName}()"
+                );
             }
         }
-
         return $returnAnnotations;
     }
 

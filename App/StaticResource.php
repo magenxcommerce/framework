@@ -9,8 +9,6 @@ use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\ObjectManager\ConfigLoaderInterface;
 use Magento\Framework\Filesystem;
 use Magento\Framework\Config\ConfigOptionsListConstants;
-use Magento\Framework\Validator\Locale;
-use Magento\Framework\View\Design\Theme\ThemePackageList;
 use Psr\Log\LoggerInterface;
 use Magento\Framework\Debug;
 use Magento\Framework\Filesystem\Driver\File;
@@ -83,16 +81,6 @@ class StaticResource implements \Magento\Framework\AppInterface
     private $driver;
 
     /**
-     * @var ThemePackageList
-     */
-    private $themePackageList;
-
-    /**
-     * @var Locale
-     */
-    private $localeValidator;
-
-    /**
      * @param State $state
      * @param Response\FileInterface $response
      * @param Request\Http $request
@@ -103,8 +91,6 @@ class StaticResource implements \Magento\Framework\AppInterface
      * @param ConfigLoaderInterface $configLoader
      * @param DeploymentConfig|null $deploymentConfig
      * @param File|null $driver
-     * @param ThemePackageList|null $themePackageList
-     * @param Locale|null $localeValidator
      *
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
@@ -118,9 +104,7 @@ class StaticResource implements \Magento\Framework\AppInterface
         \Magento\Framework\ObjectManagerInterface $objectManager,
         ConfigLoaderInterface $configLoader,
         DeploymentConfig $deploymentConfig = null,
-        File $driver = null,
-        ThemePackageList $themePackageList = null,
-        Locale $localeValidator = null
+        File $driver = null
     ) {
         $this->state = $state;
         $this->response = $response;
@@ -132,8 +116,6 @@ class StaticResource implements \Magento\Framework\AppInterface
         $this->configLoader = $configLoader;
         $this->deploymentConfig = $deploymentConfig ?: ObjectManager::getInstance()->get(DeploymentConfig::class);
         $this->driver = $driver ?: ObjectManager::getInstance()->get(File::class);
-        $this->themePackageList = $themePackageList ?? ObjectManager::getInstance()->get(ThemePackageList::class);
-        $this->localeValidator = $localeValidator ?? ObjectManager::getInstance()->get(Locale::class);
     }
 
     /**
@@ -165,16 +147,6 @@ class StaticResource implements \Magento\Framework\AppInterface
                 return $this->response;
             }
             throw $e;
-        }
-
-        if (!($this->isThemeAllowed($params['area'] . DIRECTORY_SEPARATOR . $params['theme'])
-            && $this->localeValidator->isValid($params['locale']))
-        ) {
-            if ($appMode == \Magento\Framework\App\State::MODE_PRODUCTION) {
-                $this->response->setHttpResponseCode(404);
-                return $this->response;
-            }
-            throw new \InvalidArgumentException('Requested path ' . $path . ' is wrong.');
         }
 
         $this->state->setAreaCode($params['area']);
@@ -274,10 +246,5 @@ class StaticResource implements \Magento\Framework\AppInterface
         }
 
         return $this->logger;
-    }
-
-    private function isThemeAllowed(string $theme): bool
-    {
-        return in_array($theme, array_keys($this->themePackageList->getThemes()));
     }
 }

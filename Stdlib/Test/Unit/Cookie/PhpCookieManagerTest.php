@@ -565,10 +565,7 @@ namespace Magento\Framework\Stdlib\Test\Unit\Cookie
                 ->method('warning')
                 ->with(
                     new Phrase('Unable to send the cookie. Maximum number of cookies would be exceeded.'),
-                    [
-                        'cookies' => $_COOKIE,
-                        'user-agent' => $userAgent
-                    ]
+                    array_merge($_COOKIE, ['user-agent' => $userAgent])
                 );
 
             $this->cookieManager->setPublicCookie(

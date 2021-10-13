@@ -227,6 +227,8 @@ class PluginListGenerator implements ConfigWriterInterface, ConfigLoaderInterfac
                 $data = $this->reader->read($scopeCode) ?: [];
                 unset($data['preferences']);
                 if (count($data) > 0) {
+                    $inherited = [];
+                    $processed = [];
                     $pluginData = $this->merge($data, $pluginData);
                     foreach ($data as $class => $config) {
                         if (isset($config['type'])) {
@@ -234,8 +236,6 @@ class PluginListGenerator implements ConfigWriterInterface, ConfigLoaderInterfac
                         }
                     }
                 }
-                $inherited = [];
-                $processed = [];
                 $loadedScopes[$scopeCode] = true;
             }
             if ($this->isCurrentScope($scopeCode)) {

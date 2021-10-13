@@ -20,19 +20,14 @@ return [
                 'some_entity' => [
                     'name' => 'some_entity',
                     'column' => 'entity_id',
-                    'subscription_model' => null,
-                    'additional_columns' => [],
-                    'processor' => \Magento\Framework\Mview\View\AdditionalColumnsProcessor\DefaultProcessor::class
+                    'subscription_model' => null
                 ],
                 'some_product_relation' => [
                     'name' => 'some_product_relation',
                     'column' => 'product_id',
-                    'subscription_model' => null,
-                    'additional_columns' => [],
-                    'processor' => \Magento\Framework\Mview\View\AdditionalColumnsProcessor\DefaultProcessor::class
+                    'subscription_model' => null
                 ],
             ],
-            'walker' => \Magento\Framework\Mview\View\ChangeLogBatchWalker::class
         ],
     ]
 ];

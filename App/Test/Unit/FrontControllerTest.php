@@ -8,19 +8,16 @@ declare(strict_types=1);
 namespace Magento\Framework\App\Test\Unit;
 
 use Magento\Framework\App\Action\Action;
-use Magento\Framework\App\ActionFlag;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\AreaInterface;
 use Magento\Framework\App\AreaList;
 use Magento\Framework\App\FrontController;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\Request\ValidatorInterface;
-use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\Response\Http;
 use Magento\Framework\App\RouterInterface;
 use Magento\Framework\App\RouterList;
 use Magento\Framework\App\State;
-use Magento\Framework\Event\ManagerInterface as EventManager;
 use Magento\Framework\Exception\NotFoundException;
 use Magento\Framework\Message\ManagerInterface as MessageManager;
 use Magento\Framework\Phrase;
@@ -106,9 +103,6 @@ class FrontControllerTest extends TestCase
             ->getMock();
         $this->areaListMock = $this->createMock(AreaList::class);
         $this->areaMock = $this->getMockForAbstractClass(AreaInterface::class);
-        $actionFlagMock = $this->createMock(ActionFlag::class);
-        $eventManagerMock = $this->createMock(EventManager::class);
-        $requestMock = $this->createMock(RequestInterface::class);
         $this->model = new FrontController(
             $this->routerList,
             $this->response,
@@ -116,10 +110,7 @@ class FrontControllerTest extends TestCase
             $this->messages,
             $this->logger,
             $this->appStateMock,
-            $this->areaListMock,
-            $actionFlagMock,
-            $eventManagerMock,
-            $requestMock
+            $this->areaListMock
         );
     }
 
@@ -226,10 +217,7 @@ class FrontControllerTest extends TestCase
         $this->routerList->expects($this->any())
             ->method('current')
             ->willReturn($this->router);
-        $this->appStateMock->expects($this->any())->method('getAreaCode')->willReturn('frontend');
-        $this->areaMock->expects($this->at(0))->method('load')->with(Area::PART_DESIGN)->willReturnSelf();
-        $this->areaMock->expects($this->at(1))->method('load')->with(Area::PART_TRANSLATE)->willReturnSelf();
-        $this->areaListMock->expects($this->any())->method('getArea')->willReturn($this->areaMock);
+
         $this->request->expects($this->at(0))->method('isDispatched')->willReturn(false);
         $this->request->expects($this->at(1))->method('setDispatched')->with(true);
         $this->request->expects($this->at(2))->method('isDispatched')->willReturn(true);
@@ -264,10 +252,6 @@ class FrontControllerTest extends TestCase
             ->method('current')
             ->willReturn($this->router);
 
-        $this->appStateMock->expects($this->any())->method('getAreaCode')->willReturn('frontend');
-        $this->areaMock->expects($this->at(0))->method('load')->with(Area::PART_DESIGN)->willReturnSelf();
-        $this->areaMock->expects($this->at(1))->method('load')->with(Area::PART_TRANSLATE)->willReturnSelf();
-        $this->areaListMock->expects($this->any())->method('getArea')->willReturn($this->areaMock);
         $this->request->expects($this->at(0))->method('isDispatched')->willReturn(false);
         $this->request->expects($this->at(1))->method('initForward');
         $this->request->expects($this->at(2))->method('setActionName')->with('noroute');

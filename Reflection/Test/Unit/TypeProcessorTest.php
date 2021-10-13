@@ -330,50 +330,20 @@ class TypeProcessorTest extends TestCase
 
     /**
      * Checks a case when method has only `@inheritdoc` annotation.
-     *
-     * @dataProvider getReturnTypeWithInheritDocBlockDataProvider
-     * @param string $methodName
-     * @param array $returnTypeData
      */
-    public function testGetReturnTypeWithInheritDocBlock(string $methodName, array $returnTypeData)
+    public function testGetReturnTypeWithInheritDocBlock()
     {
-        $classReflection = new ClassReflection(TSample::class);
-        $methodReflection = $classReflection->getMethod($methodName);
-
-        self::assertEquals($returnTypeData, $this->typeProcessor->getGetterReturnType($methodReflection));
-    }
-
-    public function getReturnTypeWithInheritDocBlockDataProvider(): array
-    {
-        return [
-            [
-                'getPropertyName',
-                [
-                    'type' => 'string',
-                    'isRequired' => true,
-                    'description' => null,
-                    'parameterCount' => 0,
-                ],
-            ],
-            [
-                'getData',
-                [
-                    'type' => 'array',
-                    'isRequired' => true,
-                    'description' => null,
-                    'parameterCount' => 0,
-                ],
-            ],
-            [
-                'getDataOverridden',
-                [
-                    'type' => 'array',
-                    'isRequired' => true,
-                    'description' => null,
-                    'parameterCount' => 0,
-                ],
-            ],
+        $expected = [
+            'type' => 'string',
+            'isRequired' => true,
+            'description' => null,
+            'parameterCount' => 0
         ];
+
+        $classReflection = new ClassReflection(TSample::class);
+        $methodReflection = $classReflection->getMethod('getPropertyName');
+
+        self::assertEquals($expected, $this->typeProcessor->getGetterReturnType($methodReflection));
     }
 
     /**
