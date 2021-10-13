@@ -8,8 +8,9 @@ declare(strict_types=1);
 namespace Magento\Framework\GraphQl\Query;
 
 use Magento\Framework\GraphQl\Exception\ExceptionFormatter;
-use Magento\Framework\GraphQl\Schema;
+use Magento\Framework\GraphQl\Exception\GraphQlInputException;
 use Magento\Framework\GraphQl\Query\Resolver\ContextInterface;
+use Magento\Framework\GraphQl\Schema;
 
 /**
  * Wrapper for GraphQl execution of a schema
@@ -27,15 +28,25 @@ class QueryProcessor
     private $queryComplexityLimiter;
 
     /**
-     * @param ExceptionFormatter $exceptionFormatter
-     * @param QueryComplexityLimiter $queryComplexityLimiter
+     * @var \Magento\Framework\GraphQl\Query\ErrorHandlerInterface
+     */
+    private $errorHandler;
+
+    /**
+     * @param ExceptionFormatter                                     $exceptionFormatter
+     * @param QueryComplexityLimiter                                 $queryComplexityLimiter
+     *
+     * @param \Magento\Framework\GraphQl\Query\ErrorHandlerInterface $errorHandler
+     * @SuppressWarnings(PHPMD.LongVariable)
      */
     public function __construct(
         ExceptionFormatter $exceptionFormatter,
-        QueryComplexityLimiter $queryComplexityLimiter
+        QueryComplexityLimiter $queryComplexityLimiter,
+        ErrorHandlerInterface $errorHandler
     ) {
         $this->exceptionFormatter = $exceptionFormatter;
         $this->queryComplexityLimiter = $queryComplexityLimiter;
+        $this->errorHandler = $errorHandler;
     }
 
     /**
@@ -47,6 +58,7 @@ class QueryProcessor
      * @param array|null $variableValues
      * @param string|null $operationName
      * @return Promise|array
+     * @throws GraphQlInputException
      */
     public function process(
         Schema $schema,
@@ -56,6 +68,7 @@ class QueryProcessor
         string $operationName = null
     ) : array {
         if (!$this->exceptionFormatter->shouldShowDetail()) {
+            $this->queryComplexityLimiter->validateFieldCount($source);
             $this->queryComplexityLimiter->execute();
         }
 
@@ -67,6 +80,8 @@ class QueryProcessor
             $contextValue,
             $variableValues,
             $operationName
+        )->setErrorsHandler(
+            [$this->errorHandler, 'handle']
         )->toArray(
             $this->exceptionFormatter->shouldShowDetail() ?
                 \GraphQL\Error\Debug::INCLUDE_DEBUG_MESSAGE : false

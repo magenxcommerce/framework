@@ -10,6 +10,7 @@ use Magento\Framework\UrlInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\View\Design\Theme\ThemeProviderInterface;
+use Magento\Framework\Exception\LocalizedException;
 
 /**
  * A repository service for view assets
@@ -85,6 +86,11 @@ class Repository
      * @var ThemeProviderInterface
      */
     private $themeProvider;
+
+    /**
+     * @var \Magento\Framework\App\Request\Http
+     */
+    private $request;
 
     /**
      * @param \Magento\Framework\UrlInterface $baseUrl
@@ -205,6 +211,7 @@ class Repository
      * @param string $fileId
      * @param array $params
      * @return File
+     * @throws LocalizedException
      */
     public function createAsset($fileId, array $params = [])
     {

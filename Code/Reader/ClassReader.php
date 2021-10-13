@@ -5,39 +5,86 @@
  */
 namespace Magento\Framework\Code\Reader;
 
+use ReflectionClass;
+use ReflectionException;
+use ReflectionParameter;
+
+/**
+ * Class ClassReader
+ */
 class ClassReader implements ClassReaderInterface
 {
+    private $parentsCache = [];
+
     /**
      * Read class constructor signature
      *
-     * @param string $className
+     * @param  string $className
      * @return array|null
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function getConstructor($className)
     {
-        $class = new \ReflectionClass($className);
+        $class = new ReflectionClass($className);
         $result = null;
         $constructor = $class->getConstructor();
         if ($constructor) {
             $result = [];
-            /** @var $parameter \ReflectionParameter */
+            /** @var $parameter ReflectionParameter */
             foreach ($constructor->getParameters() as $parameter) {
                 try {
+                    $parameterClass = $this->getParameterClass($parameter);
+
                     $result[] = [
                         $parameter->getName(),
-                        $parameter->getClass() !== null ? $parameter->getClass()->getName() : null,
+                        $parameterClass ? $parameterClass->getName() : null,
                         !$parameter->isOptional() && !$parameter->isDefaultValueAvailable(),
-                        $parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : null,
+                        $this->getReflectionParameterDefaultValue($parameter),
+                        $parameter->isVariadic(),
                     ];
-                } catch (\ReflectionException $e) {
-                    $message = $e->getMessage();
-                    throw new \ReflectionException($message, 0, $e);
+                } catch (ReflectionException $e) {
+                    $message = sprintf(
+                        'Impossible to process constructor argument %s of %s class',
+                        $parameter->__toString(),
+                        $className
+                    );
+                    throw new ReflectionException($message, 0, $e);
                 }
             }
         }
 
         return $result;
+    }
+
+    /**
+     * Get class by reflection parameter
+     *
+     * @param ReflectionParameter $reflectionParameter
+     * @return ReflectionClass|null
+     * @throws ReflectionException
+     */
+    private function getParameterClass(ReflectionParameter $reflectionParameter): ?ReflectionClass
+    {
+        $parameterType = $reflectionParameter->getType();
+
+        return $parameterType && !$parameterType->isBuiltin()
+            ? new ReflectionClass($parameterType->getName())
+            : null;
+    }
+
+    /**
+     * Get reflection parameter default value
+     *
+     * @param  ReflectionParameter $parameter
+     * @return array|mixed|null
+     */
+    private function getReflectionParameterDefaultValue(ReflectionParameter $parameter)
+    {
+        if ($parameter->isVariadic()) {
+            return [];
+        }
+
+        return $parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : null;
     }
 
     /**
@@ -49,11 +96,15 @@ class ClassReader implements ClassReaderInterface
      *     ...
      * )
      *
-     * @param string $className
+     * @param  string $className
      * @return string[]
      */
     public function getParents($className)
     {
+        if (isset($this->parentsCache[$className])) {
+            return $this->parentsCache[$className];
+        }
+
         $parentClass = get_parent_class($className);
         if ($parentClass) {
             $result = [];
@@ -75,6 +126,9 @@ class ClassReader implements ClassReaderInterface
                 $result = [];
             }
         }
+
+        $this->parentsCache[$className] = $result;
+
         return $result;
     }
 }
