@@ -8,15 +8,21 @@ declare(strict_types=1);
 namespace Magento\Framework\Mail;
 
 use Magento\Framework\Mail\Exception\InvalidArgumentException;
-use Laminas\Mail\Address as LaminasAddress;
-use Laminas\Mail\AddressList;
-use Laminas\Mime\Message as LaminasMimeMessage;
+use Zend\Mail\Address as ZendAddress;
+use Zend\Mail\AddressList;
+use Zend\Mail\Message as ZendMessage;
+use Zend\Mime\Message as ZendMimeMessage;
 
 /**
- * Magento Framework Email message
+ * Class EmailMessage
  */
-class EmailMessage extends Message implements EmailMessageInterface
+class EmailMessage implements EmailMessageInterface
 {
+    /**
+     * @var ZendMessage
+     */
+    private $message;
+
     /**
      * @var MimeMessageInterfaceFactory
      */
@@ -28,6 +34,8 @@ class EmailMessage extends Message implements EmailMessageInterface
     private $addressFactory;
 
     /**
+     * EmailMessage constructor
+     *
      * @param MimeMessageInterface $body
      * @param array $to
      * @param MimeMessageInterfaceFactory $mimeMessageFactory
@@ -56,35 +64,38 @@ class EmailMessage extends Message implements EmailMessageInterface
         ?array $replyTo = null,
         ?Address $sender = null,
         ?string $subject = '',
-        ?string $encoding = 'utf-8'
+        ?string $encoding = ''
     ) {
-        parent::__construct($encoding);
-        $mimeMessage = new LaminasMimeMessage();
+        $this->message = new ZendMessage();
+        $mimeMessage = new ZendMimeMessage();
         $mimeMessage->setParts($body->getParts());
-        $this->zendMessage->setBody($mimeMessage);
+        $this->message->setBody($mimeMessage);
+        if ($encoding) {
+            $this->message->setEncoding($encoding);
+        }
         if ($subject) {
-            $this->zendMessage->setSubject($subject);
+            $this->message->setSubject($subject);
         }
         if ($sender) {
-            $this->zendMessage->setSender($sender->getEmail(), $sender->getName());
+            $this->message->setSender($sender->getEmail(), $sender->getName());
         }
         if (count($to) < 1) {
             throw new InvalidArgumentException('Email message must have at list one addressee');
         }
         if ($to) {
-            $this->zendMessage->setTo($this->convertAddressArrayToAddressList($to));
+            $this->message->setTo($this->convertAddressArrayToAddressList($to));
         }
         if ($replyTo) {
-            $this->zendMessage->setReplyTo($this->convertAddressArrayToAddressList($replyTo));
+            $this->message->setReplyTo($this->convertAddressArrayToAddressList($replyTo));
         }
         if ($from) {
-            $this->zendMessage->setFrom($this->convertAddressArrayToAddressList($from));
+            $this->message->setFrom($this->convertAddressArrayToAddressList($from));
         }
         if ($cc) {
-            $this->zendMessage->setCc($this->convertAddressArrayToAddressList($cc));
+            $this->message->setCc($this->convertAddressArrayToAddressList($cc));
         }
         if ($bcc) {
-            $this->zendMessage->setBcc($this->convertAddressArrayToAddressList($bcc));
+            $this->message->setBcc($this->convertAddressArrayToAddressList($bcc));
         }
         $this->mimeMessageFactory = $mimeMessageFactory;
         $this->addressFactory = $addressFactory;
@@ -95,7 +106,7 @@ class EmailMessage extends Message implements EmailMessageInterface
      */
     public function getEncoding(): string
     {
-        return $this->zendMessage->getEncoding();
+        return $this->message->getEncoding();
     }
 
     /**
@@ -103,7 +114,7 @@ class EmailMessage extends Message implements EmailMessageInterface
      */
     public function getHeaders(): array
     {
-        return $this->zendMessage->getHeaders()->toArray();
+        return $this->message->getHeaders()->toArray();
     }
 
     /**
@@ -111,7 +122,7 @@ class EmailMessage extends Message implements EmailMessageInterface
      */
     public function getFrom(): ?array
     {
-        return $this->convertAddressListToAddressArray($this->zendMessage->getFrom());
+        return $this->convertAddressListToAddressArray($this->message->getFrom());
     }
 
     /**
@@ -119,7 +130,7 @@ class EmailMessage extends Message implements EmailMessageInterface
      */
     public function getTo(): array
     {
-        return $this->convertAddressListToAddressArray($this->zendMessage->getTo());
+        return $this->convertAddressListToAddressArray($this->message->getTo());
     }
 
     /**
@@ -127,7 +138,7 @@ class EmailMessage extends Message implements EmailMessageInterface
      */
     public function getCc(): ?array
     {
-        return $this->convertAddressListToAddressArray($this->zendMessage->getCc());
+        return $this->convertAddressListToAddressArray($this->message->getCc());
     }
 
     /**
@@ -135,7 +146,7 @@ class EmailMessage extends Message implements EmailMessageInterface
      */
     public function getBcc(): ?array
     {
-        return $this->convertAddressListToAddressArray($this->zendMessage->getBcc());
+        return $this->convertAddressListToAddressArray($this->message->getBcc());
     }
 
     /**
@@ -143,7 +154,7 @@ class EmailMessage extends Message implements EmailMessageInterface
      */
     public function getReplyTo(): ?array
     {
-        return $this->convertAddressListToAddressArray($this->zendMessage->getReplyTo());
+        return $this->convertAddressListToAddressArray($this->message->getReplyTo());
     }
 
     /**
@@ -151,15 +162,15 @@ class EmailMessage extends Message implements EmailMessageInterface
      */
     public function getSender(): ?Address
     {
-        /** @var LaminasAddress $laminasSender */
-        if (!$laminasSender = $this->zendMessage->getSender()) {
+        /** @var ZendAddress $zendSender */
+        if (!$zendSender = $this->message->getSender()) {
             return null;
         }
 
         return $this->addressFactory->create(
             [
-                'email' => $laminasSender->getEmail(),
-                'name' => $laminasSender->getName()
+                'email' => $zendSender->getEmail(),
+                'name' => $zendSender->getName()
             ]
         );
     }
@@ -167,10 +178,18 @@ class EmailMessage extends Message implements EmailMessageInterface
     /**
      * @inheritDoc
      */
-    public function getMessageBody(): MimeMessageInterface
+    public function getSubject(): ?string
+    {
+        return $this->message->getSubject();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getBody(): MimeMessageInterface
     {
         return $this->mimeMessageFactory->create(
-            ['parts' => $this->zendMessage->getBody()->getParts()]
+            ['parts' => $this->message->getBody()->getParts()]
         );
     }
 
@@ -179,7 +198,15 @@ class EmailMessage extends Message implements EmailMessageInterface
      */
     public function getBodyText(): string
     {
-        return $this->zendMessage->getBodyText();
+        return $this->message->getBodyText();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRawMessage(): string
+    {
+        return $this->toString();
     }
 
     /**
@@ -187,7 +214,7 @@ class EmailMessage extends Message implements EmailMessageInterface
      */
     public function toString(): string
     {
-        return $this->zendMessage->toString();
+        return $this->message->toString();
     }
 
     /**
@@ -220,11 +247,11 @@ class EmailMessage extends Message implements EmailMessageInterface
      */
     private function convertAddressArrayToAddressList(array $arrayList): AddressList
     {
-        $laminasAddressList = new AddressList();
+        $zendAddressList = new AddressList();
         foreach ($arrayList as $address) {
-            $laminasAddressList->add($address->getEmail(), $address->getName());
+            $zendAddressList->add($address->getEmail(), $address->getName());
         }
 
-        return $laminasAddressList;
+        return $zendAddressList;
     }
 }

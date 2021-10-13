@@ -9,7 +9,7 @@ namespace Magento\Framework\Mail;
 /**
  * Interface EmailMessageInterface
  */
-interface EmailMessageInterface extends MailMessageInterface
+interface EmailMessageInterface
 {
     /**
      * Get the message encoding
@@ -72,14 +72,14 @@ interface EmailMessageInterface extends MailMessageInterface
      *
      * @return null|string
      */
-    public function getSubject();
+    public function getSubject(): ?string;
 
     /**
      * Return the currently set message body
      *
      * @return MimeMessageInterface
      */
-    public function getMessageBody(): MimeMessageInterface;
+    public function getBody(): MimeMessageInterface;
 
     /**
      * Get the string-serialized message body text

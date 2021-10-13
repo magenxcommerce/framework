@@ -3,6 +3,7 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 declare(strict_types=1);
 
 namespace Magento\Framework\Async\Code\Generator;
@@ -150,7 +151,7 @@ class ProxyDeferredGenerator extends EntityAbstract
             $parameters[] = $this->_getMethodParameterInfo($parameter);
         }
 
-        $returnTypeValue = $this->getReturnTypeValue($method);
+        $returnTypeValue = $this->getReturnTypeValue($method->getReturnType());
         $methodInfo = [
             'name' => $method->getName(),
             'parameters' => $parameters,
@@ -207,7 +208,6 @@ class ProxyDeferredGenerator extends EntityAbstract
         } else {
             $methodCall = sprintf('%s(%s)', $name, implode(', ', $parameters));
         }
-
         //Waiting for deferred result and using it's methods.
         return "\$this->wait();\n"
             .($withoutReturn ? '' : 'return ')."\$this->instance->$methodCall;";
@@ -231,27 +231,24 @@ class ProxyDeferredGenerator extends EntityAbstract
                 $result = false;
             }
         }
-
         return $result;
     }
 
     /**
      * Returns return type
      *
-     * @param \ReflectionMethod $method
+     * @param mixed $returnType
      * @return null|string
      */
-    private function getReturnTypeValue(\ReflectionMethod $method): ?string
+    private function getReturnTypeValue($returnType): ?string
     {
         $returnTypeValue = null;
-        $returnType = $method->getReturnType();
         if ($returnType) {
             $returnTypeValue = ($returnType->allowsNull() ? '?' : '');
             $returnTypeValue .= ($returnType->getName() === 'self')
-                ? $this->_getFullyQualifiedClassName($method->getDeclaringClass()->getName())
+                ? $this->getSourceClassName()
                 : $returnType->getName();
         }
-
         return $returnTypeValue;
     }
 }
