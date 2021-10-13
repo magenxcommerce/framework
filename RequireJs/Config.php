@@ -155,15 +155,22 @@ config;
     {
         $distributedConfig = '';
         $customConfigFiles = $this->fileSource->getFiles($this->design->getDesignTheme(), self::CONFIG_FILE_NAME);
-        
         foreach ($customConfigFiles as $file) {
             /** @var $fileReader \Magento\Framework\Filesystem\File\Read */
             $fileReader = $this->readFactory->create($file->getFilename(), DriverPool::FILE);
             $config = $fileReader->readAll($file->getName());
-            $distributedConfig .= str_replace('%config%', $config, self::PARTIAL_CONFIG_TEMPLATE);
+            $distributedConfig .= str_replace(
+                ['%config%', '%context%'],
+                [$config, $file->getModule()],
+                self::PARTIAL_CONFIG_TEMPLATE
+            );
         }
 
-        $fullConfig = str_replace(['%function%', '%usages%'], [$distributedConfig], self::FULL_CONFIG_TEMPLATE);
+        $fullConfig = str_replace(
+            ['%function%', '%usages%'],
+            [$distributedConfig],
+            self::FULL_CONFIG_TEMPLATE
+        );
 
         if ($this->minification->isEnabled('js')) {
             $fullConfig = $this->minifyAdapter->minify($fullConfig);
@@ -189,14 +196,11 @@ config;
      */
     public function getMixinsFileRelativePath()
     {
-        $map = $this->getRepositoryFilesMap(
-            Config::MIXINS_FILE_NAME,
-            [
-                'area' => $this->staticContext->getAreaCode(),
-                'theme' => $this->staticContext->getThemePath(),
-                'locale' => $this->staticContext->getLocale(),
-            ]
-        );
+        $map = $this->getRepositoryFilesMap(Config::MIXINS_FILE_NAME, [
+            'area' => $this->staticContext->getAreaCode(),
+            'theme' => $this->staticContext->getThemePath(),
+            'locale' => $this->staticContext->getLocale(),
+        ]);
         if ($map) {
             $relativePath = implode('/', $map) . '/' . Config::MIXINS_FILE_NAME;
         } else {
@@ -250,14 +254,11 @@ config;
      */
     public function getUrlResolverFileRelativePath()
     {
-        $map = $this->getRepositoryFilesMap(
-            Config::URL_RESOLVER_FILE_NAME,
-            [
-                'area' => $this->staticContext->getAreaCode(),
-                'theme' => $this->staticContext->getThemePath(),
-                'locale' => $this->staticContext->getLocale(),
-            ]
-        );
+        $map = $this->getRepositoryFilesMap(Config::URL_RESOLVER_FILE_NAME, [
+            'area' => $this->staticContext->getAreaCode(),
+            'theme' => $this->staticContext->getThemePath(),
+            'locale' => $this->staticContext->getLocale(),
+        ]);
         if ($map) {
             $relativePath = implode('/', $map) . '/' . Config::URL_RESOLVER_FILE_NAME;
         } else {
@@ -277,8 +278,6 @@ config;
     }
 
     /**
-     * Get path to configuration file
-     *
      * @return string
      */
     protected function getConfigFileName()
@@ -287,13 +286,11 @@ config;
     }
 
     /**
-     * Get resolver code which RequireJS fetch minified files instead
-     *
      * @return string
      */
     public function getMinResolverCode()
     {
-        $excludes = ['url.indexOf(baseUrl) === 0'];
+        $excludes = [];
         foreach ($this->minification->getExcludes('js') as $expression) {
             $excludes[] = '!url.match(/' . str_replace('/', '\/', $expression) . '/)';
         }
@@ -301,8 +298,7 @@ config;
 
         $result = <<<code
     var ctx = require.s.contexts._,
-        origNameToUrl = ctx.nameToUrl,
-        baseUrl = ctx.config.baseUrl;
+        origNameToUrl = ctx.nameToUrl;
 
     ctx.nameToUrl = function() {
         var url = origNameToUrl.apply(ctx, arguments);
@@ -321,8 +317,6 @@ code;
     }
 
     /**
-     * Get map for given file.
-     *
      * @param string $fileId
      * @param array $params
      * @return array

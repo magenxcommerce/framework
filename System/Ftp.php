@@ -32,7 +32,7 @@ class Ftp
     }
 
     /**
-     * Wrapper for ftp_mkdir
+     * ftp_mkdir wrapper
      *
      * @param string $name
      * @return string the newly created directory name on success or <b>FALSE</b> on error.
@@ -56,7 +56,7 @@ class Ftp
         $dir = explode("/", $path);
         $path = "";
         $ret = true;
-        for ($i = 0, $count = count($dir); $i < $count; $i++) {
+        for ($i = 0; $i < count($dir); $i++) {
             $path .= "/" . $dir[$i];
             if (!@ftp_chdir($this->_conn, $path)) {
                 @ftp_chdir($this->_conn, "/");
@@ -127,7 +127,7 @@ class Ftp
     public function connect($string, $timeout = 900)
     {
         $params = $this->validateConnectionString($string);
-        $port = isset($params['port']) ? (int)$params['port'] : 21;
+        $port = isset($params['port']) ? intval($params['port']) : 21;
 
         $this->_conn = ftp_connect($params['host'], $port, $timeout);
 
@@ -147,7 +147,7 @@ class Ftp
     }
 
     /**
-     * Wrapper for ftp_fput
+     * ftp_fput wrapper
      *
      * @param string $remoteFile
      * @param resource $handle
@@ -162,7 +162,7 @@ class Ftp
     }
 
     /**
-     * Wrapper for ftp_put
+     * ftp_put wrapper
      *
      * @param string $remoteFile
      * @param string $localFile
@@ -188,7 +188,7 @@ class Ftp
         if (empty($data[1])) {
             return false;
         }
-        if ((int)$data[0] != 257) {
+        if (intval($data[0]) != 257) {
             return false;
         }
         $out = trim($data[1], '"');
@@ -199,7 +199,7 @@ class Ftp
     }
 
     /**
-     * Wrapper for ftp_raw
+     * ftp_raw wrapper
      *
      * @param string $cmd
      * @return array The server's response as an array of strings.
@@ -272,7 +272,7 @@ class Ftp
     }
 
     /**
-     * Wrapper for ftp_pasv
+     * ftp_pasv wrapper
      *
      * @param bool $pasv
      * @return bool
@@ -296,7 +296,7 @@ class Ftp
     }
 
     /**
-     * Wrapper for ftp_chmod
+     * ftp_chmod wrapper
      *
      * @param int $mode
      * @param string $remoteFile
@@ -309,7 +309,7 @@ class Ftp
     }
 
     /**
-     * Wrapper for ftp_chdir
+     * ftp_chdir wrapper
      *
      * @param string $dir
      * @return bool
@@ -321,7 +321,7 @@ class Ftp
     }
 
     /**
-     * Wrapper for ftp_cdup
+     * ftp_cdup wrapper
      *
      * @return bool
      */
@@ -332,7 +332,7 @@ class Ftp
     }
 
     /**
-     * Wrapper for ftp_get
+     * ftp_get wrapper
      *
      * @param string $localFile
      * @param string $remoteFile
@@ -349,7 +349,7 @@ class Ftp
     }
 
     /**
-     * Wrapper for ftp_nlist
+     * ftp_nlist wrapper
      *
      * @param string $dir
      * @return bool
@@ -362,7 +362,7 @@ class Ftp
     }
 
     /**
-     * Wrapper for ftp_rawlist
+     * ftp_rawlist wrapper
      *
      * @param string $dir
      * @param bool $recursive

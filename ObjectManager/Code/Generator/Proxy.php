@@ -5,15 +5,8 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
-
 namespace Magento\Framework\ObjectManager\Code\Generator;
 
-/**
- * Class Proxy
- *
- * @package Magento\Framework\ObjectManager\Code\Generator
- */
 class Proxy extends \Magento\Framework\Code\Generator\EntityAbstract
 {
     /**
@@ -27,8 +20,6 @@ class Proxy extends \Magento\Framework\Code\Generator\EntityAbstract
     const NON_INTERCEPTABLE_INTERFACE = \Magento\Framework\ObjectManager\NoninterceptableInterface::class;
 
     /**
-     * Returns default result class name
-     *
      * @param string $modelClassName
      * @return string
      */
@@ -74,7 +65,6 @@ class Proxy extends \Magento\Framework\Code\Generator\EntityAbstract
                 'tags' => [['name' => 'var', 'description' => 'bool']],
             ],
         ];
-
         return $properties;
     }
 
@@ -122,16 +112,13 @@ class Proxy extends \Magento\Framework\Code\Generator\EntityAbstract
         $reflectionClass = new \ReflectionClass($this->getSourceClassName());
         $publicMethods = $reflectionClass->getMethods(\ReflectionMethod::IS_PUBLIC);
         foreach ($publicMethods as $method) {
-            if (!(
-                    $method->isConstructor() ||
+            if (!($method->isConstructor() ||
                     $method->isFinal() ||
                     $method->isStatic() ||
-                    $method->isDestructor()
-                )
-                && !in_array(
-                    $method->getName(),
-                    ['__sleep', '__wakeup', '__clone']
-                )
+                    $method->isDestructor()) && !in_array(
+                        $method->getName(),
+                        ['__sleep', '__wakeup', '__clone']
+                    )
             ) {
                 $methods[] = $this->_getMethodInfo($method);
             }
@@ -141,8 +128,6 @@ class Proxy extends \Magento\Framework\Code\Generator\EntityAbstract
     }
 
     /**
-     * Generates code
-     *
      * @return string
      */
     protected function _generateCode()
@@ -156,7 +141,6 @@ class Proxy extends \Magento\Framework\Code\Generator\EntityAbstract
             $this->_classGenerator->setExtendedClass($typeName);
             $this->_classGenerator->setImplementedInterfaces(['\\' . self::NON_INTERCEPTABLE_INTERFACE]);
         }
-
         return parent::_generateCode();
     }
 
@@ -176,7 +160,10 @@ class Proxy extends \Magento\Framework\Code\Generator\EntityAbstract
             $parameters[] = $this->_getMethodParameterInfo($parameter);
         }
 
-        $returnTypeValue = $this->getReturnTypeValue($method);
+        $returnType = $method->getReturnType();
+        $returnTypeValue = $returnType
+            ? ($returnType->allowsNull() ? '?' : '') .$returnType->getName()
+            : null;
         $methodInfo = [
             'name' => $method->getName(),
             'parameters' => $parameters,
@@ -250,13 +237,11 @@ class Proxy extends \Magento\Framework\Code\Generator\EntityAbstract
         }
 
         return ($withoutReturn ? '' : 'return ')
-            . '$this->_getSubject()->' . $methodCall . ';';
+            .'$this->_getSubject()->' . $methodCall . ';';
     }
 
     /**
-     * Validates data
-     *
-     * @return bool
+     * {@inheritdoc}
      */
     protected function _validateData()
     {
@@ -272,27 +257,6 @@ class Proxy extends \Magento\Framework\Code\Generator\EntityAbstract
                 $result = false;
             }
         }
-
         return $result;
-    }
-
-    /**
-     * Returns return type
-     *
-     * @param \ReflectionMethod $method
-     * @return null|string
-     */
-    private function getReturnTypeValue(\ReflectionMethod $method): ?string
-    {
-        $returnTypeValue = null;
-        $returnType = $method->getReturnType();
-        if ($returnType) {
-            $returnTypeValue = ($returnType->allowsNull() ? '?' : '');
-            $returnTypeValue .= ($returnType->getName() === 'self')
-                ? $this->_getFullyQualifiedClassName($method->getDeclaringClass()->getName())
-                : $returnType->getName();
-        }
-
-        return $returnTypeValue;
     }
 }

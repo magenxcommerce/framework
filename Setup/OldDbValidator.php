@@ -11,9 +11,7 @@ use Composer\Package\Version\VersionParser;
 use Magento\Framework\Module\DbVersionInfo;
 
 /**
- * Old Validator for database
- *
- * Used in order to support backward compatibility of modules that are installed
+ * Old Validator for database is used in order to support backward compatability of modules that are installed
  * in old way (with Install/Upgrade Schema/Data scripts)
  */
 class OldDbValidator implements UpToDateValidatorInterface
@@ -49,7 +47,7 @@ class OldDbValidator implements UpToDateValidatorInterface
                 $requiredVersion = $versionParser->parseConstraints('>' . $error[DbVersionInfo::KEY_REQUIRED]);
                 if ($requiredVersion->matches($currentVersion)) {
                     $codebaseUpdateNeeded = true;
-                }
+                };
 
                 $messages[] = sprintf(
                     "<info>%20s %10s: %11s  ->  %-11s</info>",
@@ -65,8 +63,6 @@ class OldDbValidator implements UpToDateValidatorInterface
     }
 
     /**
-     * Is up to date
-     *
      * @return bool
      */
     public function isUpToDate(): bool

@@ -10,14 +10,15 @@ namespace Magento\Framework\GraphQl\Schema\Type\Output\ElementMapper\Formatter;
 use Magento\Framework\GraphQl\Config\Data\WrappedTypeProcessor;
 use Magento\Framework\GraphQl\Config\Element\Field;
 use Magento\Framework\GraphQl\Config\Element\TypeInterface;
+use Magento\Framework\GraphQl\Query\ResolverInterface;
 use Magento\Framework\GraphQl\Schema\Type\Input\InputMapper;
 use Magento\Framework\GraphQl\Schema\Type\Output\ElementMapper\FormatterInterface;
 use Magento\Framework\GraphQl\Schema\Type\Output\OutputMapper;
 use Magento\Framework\GraphQl\Schema\Type\OutputTypeInterface;
 use Magento\Framework\GraphQl\Schema\Type\ScalarTypes;
+use Magento\Framework\GraphQl\Schema\TypeFactory;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\GraphQl\Schema\Type\ResolveInfoFactory;
-use Magento\Framework\GraphQl\Query\Resolver\Factory as ResolverFactory;
 
 /**
  * Convert fields of the given 'type' config element to the objects compatible with GraphQL schema generator.
@@ -40,6 +41,11 @@ class Fields implements FormatterInterface
     private $inputMapper;
 
     /**
+     * @var TypeFactory
+     */
+    private $typeFactory;
+
+    /**
      * @var ScalarTypes
      */
     private $scalarTypes;
@@ -55,39 +61,34 @@ class Fields implements FormatterInterface
     private $resolveInfoFactory;
 
     /**
-     * @var ResolverFactory
-     */
-    private $resolverFactory;
-
-    /**
      * @param ObjectManagerInterface $objectManager
      * @param OutputMapper $outputMapper
      * @param InputMapper $inputMapper
+     * @param TypeFactory $typeFactory
      * @param ScalarTypes $scalarTypes
      * @param WrappedTypeProcessor $wrappedTypeProcessor
      * @param ResolveInfoFactory $resolveInfoFactory
-     * @param ResolverFactory $resolverFactory
      */
     public function __construct(
         ObjectManagerInterface $objectManager,
         OutputMapper $outputMapper,
         InputMapper $inputMapper,
+        TypeFactory $typeFactory,
         ScalarTypes $scalarTypes,
         WrappedTypeProcessor $wrappedTypeProcessor,
-        ResolveInfoFactory $resolveInfoFactory,
-        ?ResolverFactory $resolverFactory = null
+        ResolveInfoFactory $resolveInfoFactory
     ) {
         $this->objectManager = $objectManager;
         $this->outputMapper = $outputMapper;
         $this->inputMapper = $inputMapper;
+        $this->typeFactory = $typeFactory;
         $this->scalarTypes = $scalarTypes;
         $this->wrappedTypeProcessor = $wrappedTypeProcessor;
         $this->resolveInfoFactory = $resolveInfoFactory;
-        $this->resolverFactory = $resolverFactory ?? $this->objectManager->get(ResolverFactory::class);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritDoc}
      */
     public function format(TypeInterface $configElement, OutputTypeInterface $outputType): array
     {
@@ -150,14 +151,9 @@ class Fields implements FormatterInterface
             $fieldConfig['description'] = $field->getDescription();
         }
 
-        if (!empty($field->getDeprecated())) {
-            if (isset($field->getDeprecated()['reason'])) {
-                $fieldConfig['deprecationReason'] = $field->getDeprecated()['reason'];
-            }
-        }
-
         if ($field->getResolver() != null) {
-            $resolver = $this->resolverFactory->createByClass($field->getResolver());
+            /** @var ResolverInterface $resolver */
+            $resolver = $this->objectManager->get($field->getResolver());
 
             $fieldConfig['resolve'] =
                 function ($value, $args, $context, $info) use ($resolver, $field) {

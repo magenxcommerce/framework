@@ -6,10 +6,7 @@
 namespace Magento\Framework\Option;
 
 /**
- * Array marker interface
- *
- * @deprecated 102.0.1 please use \Magento\Framework\Data\OptionSourceInterface instead.
- * @see \Magento\Framework\Data\OptionSourceInterface
+ * @todo Remove in favor of the ancestor interface
  */
 interface ArrayInterface extends \Magento\Framework\Data\OptionSourceInterface
 {

@@ -7,7 +7,6 @@ namespace Magento\Framework\App;
 
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Filesystem;
-use Magento\Framework\Event\Manager;
 
 /**
  * Application Maintenance Mode
@@ -40,18 +39,13 @@ class MaintenanceMode
     protected $flagDir;
 
     /**
-     * @var Manager
-     */
-    private $eventManager;
-
-    /**
+     * Constructor
+     *
      * @param \Magento\Framework\Filesystem $filesystem
-     * @param Manager|null $eventManager
      */
-    public function __construct(Filesystem $filesystem, ?Manager $eventManager = null)
+    public function __construct(Filesystem $filesystem)
     {
         $this->flagDir = $filesystem->getDirectoryWrite(self::FLAG_DIR);
-        $this->eventManager = $eventManager ?: ObjectManager::getInstance()->get(Manager::class);
     }
 
     /**
@@ -79,8 +73,6 @@ class MaintenanceMode
      */
     public function set($isOn)
     {
-        $this->eventManager->dispatch('maintenance_mode_changed', ['isOn' => $isOn]);
-
         if ($isOn) {
             return $this->flagDir->touch(self::FLAG_FILENAME);
         }
@@ -110,7 +102,7 @@ class MaintenanceMode
             throw new \InvalidArgumentException("One or more IP-addresses is expected (comma-separated)\n");
         }
         $result = $this->flagDir->writeFile(self::IP_FILENAME, $addresses);
-        return false !== $result;
+        return false !== $result ? true : false;
     }
 
     /**

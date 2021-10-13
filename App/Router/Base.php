@@ -5,8 +5,6 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
-
 namespace Magento\Framework\App\Router;
 
 /**
@@ -184,7 +182,7 @@ class Base implements \Magento\Framework\App\RouterInterface
             $output[$paramName] = array_shift($params);
         }
 
-        for ($i = 0, $l = count($params); $i < $l; $i += 2) {
+        for ($i = 0, $l = sizeof($params); $i < $l; $i += 2) {
             $output['variables'][$params[$i]] = isset($params[$i + 1]) ? urldecode($params[$i + 1]) : '';
         }
         return $output;
@@ -348,6 +346,7 @@ class Base implements \Magento\Framework\App\RouterInterface
      * @param \Magento\Framework\App\RequestInterface $request
      * @param string $path
      * @return void
+     * @SuppressWarnings(PHPMD.ExitExpression)
      */
     protected function _checkShouldBeSecure(\Magento\Framework\App\RequestInterface $request, $path = '')
     {
@@ -362,7 +361,6 @@ class Base implements \Magento\Framework\App\RouterInterface
             }
 
             $this->_responseFactory->create()->setRedirect($url)->sendResponse();
-            // phpcs:ignore Magento2.Security.LanguageConstruct.ExitUsage
             exit;
         }
     }
@@ -374,6 +372,6 @@ class Base implements \Magento\Framework\App\RouterInterface
      */
     protected function _shouldRedirectToSecure()
     {
-        return false;
+        return $this->_url->getUseSession();
     }
 }

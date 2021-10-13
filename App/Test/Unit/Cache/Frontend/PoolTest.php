@@ -3,41 +3,31 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
-
 namespace Magento\Framework\App\Test\Unit\Cache\Frontend;
 
-use Magento\Framework\App\Cache\Frontend\Factory;
 use Magento\Framework\App\Cache\Frontend\Pool;
 use Magento\Framework\App\Cache\Type\FrontendPool;
-use Magento\Framework\App\DeploymentConfig;
-use Magento\Framework\Cache\FrontendInterface;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
 
-/**
- * And another docblock to make the sniff shut up.
- */
-class PoolTest extends TestCase
+class PoolTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @var Pool
+     * @var \Magento\Framework\App\Cache\Frontend\Pool
      */
     protected $_model;
 
     /**
      * Array of frontend cache instances stubs, used to verify, what is stored inside the pool
      *
-     * @var MockObject[]
+     * @var \PHPUnit_Framework_MockObject_MockObject[]
      */
     protected $_frontendInstances = [];
 
-    protected function setUp(): void
+    protected function setUp()
     {
         $this->_frontendInstances = [
-            Pool::DEFAULT_FRONTEND_ID => $this->getMockForAbstractClass(FrontendInterface::class),
-            'resource1' => $this->getMockForAbstractClass(FrontendInterface::class),
-            'resource2' => $this->getMockForAbstractClass(FrontendInterface::class),
+            Pool::DEFAULT_FRONTEND_ID => $this->createMock(\Magento\Framework\Cache\FrontendInterface::class),
+            'resource1' => $this->createMock(\Magento\Framework\Cache\FrontendInterface::class),
+            'resource2' => $this->createMock(\Magento\Framework\Cache\FrontendInterface::class),
         ];
 
         $frontendFactoryMap = [
@@ -48,18 +38,18 @@ class PoolTest extends TestCase
             [['r1d1' => 'value1', 'r1d2' => 'value2'], $this->_frontendInstances['resource1']],
             [['r2d1' => 'value1', 'r2d2' => 'value2'], $this->_frontendInstances['resource2']],
         ];
-        $frontendFactory = $this->createMock(Factory::class);
-        $frontendFactory->expects($this->any())->method('create')->willReturnMap($frontendFactoryMap);
+        $frontendFactory = $this->createMock(\Magento\Framework\App\Cache\Frontend\Factory::class);
+        $frontendFactory->expects($this->any())->method('create')->will($this->returnValueMap($frontendFactoryMap));
 
-        $deploymentConfig = $this->createMock(DeploymentConfig::class);
+        $deploymentConfig = $this->createMock(\Magento\Framework\App\DeploymentConfig::class);
         $deploymentConfig->expects(
             $this->any()
         )->method(
             'getConfigData'
         )->with(
             FrontendPool::KEY_CACHE
-        )->willReturn(
-            ['frontend' => ['resource2' => ['r2d1' => 'value1', 'r2d2' => 'value2']]]
+        )->will(
+            $this->returnValue(['frontend' => ['resource2' => ['r2d1' => 'value1', 'r2d2' => 'value2']]])
         );
 
         $frontendSettings = [
@@ -67,7 +57,7 @@ class PoolTest extends TestCase
             'resource1' => ['r1d1' => 'value1', 'r1d2' => 'value2'],
         ];
 
-        $this->_model = new Pool(
+        $this->_model = new \Magento\Framework\App\Cache\Frontend\Pool(
             $deploymentConfig,
             $frontendFactory,
             $frontendSettings
@@ -79,10 +69,10 @@ class PoolTest extends TestCase
      */
     public function testConstructorNoInitialization()
     {
-        $deploymentConfig = $this->createMock(DeploymentConfig::class);
-        $frontendFactory = $this->createMock(Factory::class);
+        $deploymentConfig = $this->createMock(\Magento\Framework\App\DeploymentConfig::class);
+        $frontendFactory = $this->createMock(\Magento\Framework\App\Cache\Frontend\Factory::class);
         $frontendFactory->expects($this->never())->method('create');
-        new Pool($deploymentConfig, $frontendFactory);
+        new \Magento\Framework\App\Cache\Frontend\Pool($deploymentConfig, $frontendFactory);
     }
 
     /**
@@ -97,21 +87,21 @@ class PoolTest extends TestCase
         array $frontendSettings,
         array $expectedFactoryArg
     ) {
-        $deploymentConfig = $this->createMock(DeploymentConfig::class);
+        $deploymentConfig = $this->createMock(\Magento\Framework\App\DeploymentConfig::class);
         $deploymentConfig->expects(
             $this->once()
         )->method(
             'getConfigData'
         )->with(
             FrontendPool::KEY_CACHE
-        )->willReturn(
-            $fixtureCacheConfig
+        )->will(
+            $this->returnValue($fixtureCacheConfig)
         );
 
-        $frontendFactory = $this->createMock(Factory::class);
+        $frontendFactory = $this->createMock(\Magento\Framework\App\Cache\Frontend\Factory::class);
         $frontendFactory->expects($this->at(0))->method('create')->with($expectedFactoryArg);
 
-        $model = new Pool($deploymentConfig, $frontendFactory, $frontendSettings);
+        $model = new \Magento\Framework\App\Cache\Frontend\Pool($deploymentConfig, $frontendFactory, $frontendSettings);
         $model->current();
     }
 
@@ -121,38 +111,25 @@ class PoolTest extends TestCase
     public function initializationParamsDataProvider()
     {
         return [
-            'no deployment config, default settings' => [
+            'default frontend, default settings' => [
                 ['frontend' => []],
                 [Pool::DEFAULT_FRONTEND_ID => ['default_option' => 'default_value']],
                 ['default_option' => 'default_value'],
             ],
-            'deployment config, default settings' => [
+            'default frontend, overridden settings' => [
                 ['frontend' => [Pool::DEFAULT_FRONTEND_ID => ['configured_option' => 'configured_value']]],
-                [Pool::DEFAULT_FRONTEND_ID => ['default_option' => 'default_value']],
-                ['configured_option' => 'configured_value', 'default_option' => 'default_value'],
-            ],
-            'deployment config, overridden settings' => [
-                ['frontend' => [Pool::DEFAULT_FRONTEND_ID => ['configured_option' => 'configured_value']]],
-                [Pool::DEFAULT_FRONTEND_ID => ['configured_option' => 'default_value']],
+                [Pool::DEFAULT_FRONTEND_ID => ['ignored_option' => 'ignored_value']],
                 ['configured_option' => 'configured_value'],
             ],
-            'deployment config, default settings, overridden settings' => [
-                ['frontend' => [Pool::DEFAULT_FRONTEND_ID => ['configured_option' => 'configured_value']]],
-                [Pool::DEFAULT_FRONTEND_ID => [
-                    'configured_option' => 'default_value',
-                    'default_setting' => 'default_value'
-                ]],
-                ['configured_option' => 'configured_value', 'default_setting' => 'default_value'],
-            ],
-            'custom deployent config, default settings' => [
-                ['frontend' => ['custom' => ['configured_option' => 'configured_value']]],
+            'custom frontend, default settings' => [
+                ['frontend' => []],
                 ['custom' => ['default_option' => 'default_value']],
-                ['configured_option' => 'configured_value', 'default_option' => 'default_value'],
+                ['default_option' => 'default_value'],
             ],
-            'custom deployent config, default settings, overridden settings' => [
+            'custom frontend, overridden settings' => [
                 ['frontend' => ['custom' => ['configured_option' => 'configured_value']]],
-                ['custom' => ['default_option' => 'default_value', 'configured_option' => 'default_value']],
-                ['configured_option' => 'configured_value', 'default_option' => 'default_value'],
+                ['custom' => ['ignored_option' => 'ignored_value']],
+                ['configured_option' => 'configured_value'],
             ]
         ];
     }
@@ -215,8 +192,12 @@ class PoolTest extends TestCase
         }
     }
 
-    public function testFallbackOnDefault()
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Cache frontend 'unknown' is not recognized
+     */
+    public function testGetUnknownFrontendId()
     {
-        $this->assertSame($this->_frontendInstances[Pool::DEFAULT_FRONTEND_ID], $this->_model->get('unknown'));
+        $this->_model->get('unknown');
     }
 }

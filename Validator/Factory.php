@@ -6,33 +6,22 @@
 
 namespace Magento\Framework\Validator;
 
-use Magento\Framework\Module\Dir\Reader;
-use Magento\Framework\ObjectManagerInterface;
-use Magento\Framework\Phrase;
-use Magento\Framework\Validator;
 use Magento\Framework\Cache\FrontendInterface;
 
-/**
- * Factory for \Magento\Framework\Validator and \Magento\Framework\Validator\Builder.
- */
 class Factory
 {
-    /**
-     * cache key
-     *
-     * @deprecated
-     */
+    /** cache key */
     const CACHE_KEY = __CLASS__;
 
     /**
-     * @var ObjectManagerInterface
+     * @var \Magento\Framework\ObjectManagerInterface
      */
     protected $_objectManager;
 
     /**
      * Validator config files
      *
-     * @var iterable|null
+     * @var array|null
      */
     protected $_configFiles = null;
 
@@ -42,25 +31,40 @@ class Factory
     private $isDefaultTranslatorInitialized = false;
 
     /**
-     * @var Reader
+     * @var \Magento\Framework\Module\Dir\Reader
      */
     private $moduleReader;
 
     /**
+     * @var FrontendInterface
+     */
+    private $cache;
+
+    /**
+     * @var \Magento\Framework\Serialize\SerializerInterface
+     */
+    private $serializer;
+
+    /**
+     * @var \Magento\Framework\Config\FileIteratorFactory
+     */
+    private $fileIteratorFactory;
+
+    /**
      * Initialize dependencies
      *
-     * @param ObjectManagerInterface $objectManager
-     * @param Reader $moduleReader
-     * @param FrontendInterface $cache @deprecated
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @param \Magento\Framework\ObjectManagerInterface $objectManager
+     * @param \Magento\Framework\Module\Dir\Reader $moduleReader
+     * @param FrontendInterface $cache
      */
     public function __construct(
-        ObjectManagerInterface $objectManager,
-        Reader $moduleReader,
+        \Magento\Framework\ObjectManagerInterface $objectManager,
+        \Magento\Framework\Module\Dir\Reader $moduleReader,
         FrontendInterface $cache
     ) {
         $this->_objectManager = $objectManager;
         $this->moduleReader = $moduleReader;
+        $this->cache = $cache;
     }
 
     /**
@@ -71,7 +75,17 @@ class Factory
     protected function _initializeConfigList()
     {
         if (!$this->_configFiles) {
-            $this->_configFiles = $this->moduleReader->getConfigurationFiles('validation.xml');
+            $this->_configFiles = $this->cache->load(self::CACHE_KEY);
+            if (!$this->_configFiles) {
+                $this->_configFiles = $this->moduleReader->getConfigurationFiles('validation.xml');
+                $this->cache->save(
+                    $this->getSerializer()->serialize($this->_configFiles->toArray()),
+                    self::CACHE_KEY
+                );
+            } else {
+                $filesArray = $this->getSerializer()->unserialize($this->_configFiles);
+                $this->_configFiles = $this->getFileIteratorFactory()->create(array_keys($filesArray));
+            }
         }
     }
 
@@ -79,7 +93,6 @@ class Factory
      * Create and set default translator to \Magento\Framework\Validator\AbstractValidator.
      *
      * @return void
-     * @throws \Zend_Translate_Exception
      */
     protected function _initializeDefaultTranslator()
     {
@@ -87,7 +100,7 @@ class Factory
             // Pass translations to \Magento\Framework\TranslateInterface from validators
             $translatorCallback = function () {
                 $argc = func_get_args();
-                return (string)new Phrase(array_shift($argc), $argc);
+                return (string)new \Magento\Framework\Phrase(array_shift($argc), $argc);
             };
             /** @var \Magento\Framework\Translate\Adapter $translator */
             $translator = $this->_objectManager->create(\Magento\Framework\Translate\Adapter::class);
@@ -102,15 +115,14 @@ class Factory
      *
      * Will instantiate \Magento\Framework\Validator\Config
      *
-     * @return Config
-     * @throws \Zend_Translate_Exception
+     * @return \Magento\Framework\Validator\Config
      */
     public function getValidatorConfig()
     {
         $this->_initializeConfigList();
         $this->_initializeDefaultTranslator();
         return $this->_objectManager->create(
-            Config::class,
+            \Magento\Framework\Validator\Config::class,
             ['configFiles' => $this->_configFiles]
         );
     }
@@ -121,8 +133,7 @@ class Factory
      * @param string $entityName
      * @param string $groupName
      * @param array|null $builderConfig
-     * @return Builder
-     * @throws \Zend_Translate_Exception
+     * @return \Magento\Framework\Validator\Builder
      */
     public function createValidatorBuilder($entityName, $groupName, array $builderConfig = null)
     {
@@ -136,12 +147,43 @@ class Factory
      * @param string $entityName
      * @param string $groupName
      * @param array|null $builderConfig
-     * @return Validator
-     * @throws \Zend_Translate_Exception
+     * @return \Magento\Framework\Validator
      */
     public function createValidator($entityName, $groupName, array $builderConfig = null)
     {
         $this->_initializeDefaultTranslator();
         return $this->getValidatorConfig()->createValidator($entityName, $groupName, $builderConfig);
+    }
+
+    /**
+     * Get serializer
+     *
+     * @return \Magento\Framework\Serialize\SerializerInterface
+     * @deprecated 101.0.0
+     */
+    private function getSerializer()
+    {
+        if ($this->serializer === null) {
+            $this->serializer = $this->_objectManager->get(
+                \Magento\Framework\Serialize\SerializerInterface::class
+            );
+        }
+        return $this->serializer;
+    }
+
+    /**
+     * Get file iterator factory
+     *
+     * @return \Magento\Framework\Config\FileIteratorFactory
+     * @deprecated 101.0.0
+     */
+    private function getFileIteratorFactory()
+    {
+        if ($this->fileIteratorFactory === null) {
+            $this->fileIteratorFactory = $this->_objectManager->get(
+                \Magento\Framework\Config\FileIteratorFactory::class
+            );
+        }
+        return $this->fileIteratorFactory;
     }
 }

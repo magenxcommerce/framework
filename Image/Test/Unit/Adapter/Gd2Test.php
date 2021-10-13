@@ -3,20 +3,14 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-
-declare(strict_types=1);
-
 namespace Magento\Framework\Image\Test\Unit\Adapter;
 
-use Magento\Framework\Image\Adapter\AbstractAdapter;
-use Magento\Framework\Image\Adapter\Gd2;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
-use PHPUnit\Framework\TestCase;
 
 /**
  * \Magento\Framework\Image\Adapter\Gd2 class test
  */
-class Gd2Test extends TestCase
+class Gd2Test extends \PHPUnit\Framework\TestCase
 {
     /**
      * Value to mock ini_get('memory_limit')
@@ -31,31 +25,24 @@ class Gd2Test extends TestCase
     public static $imageData = [];
 
     /**
-     * Simulation of filesize() function
-     *
-     * @var int
-     */
-    public static $imageSize = 1;
-
-    /**
      * Adapter for testing
-     * @var Gd2
+     * @var \Magento\Framework\Image\Adapter\Gd2
      */
     protected $adapter;
 
     /**
-     * @var ObjectManager
+     * @var \Magento\Framework\TestFramework\Unit\Helper\ObjectManager
      */
     protected $objectManager;
 
     /**
      * Setup testing object
      */
-    protected function setUp(): void
+    protected function setUp()
     {
         require_once __DIR__ . '/_files/global_php_mock.php';
         $this->objectManager = new ObjectManager($this);
-        $this->adapter = $this->objectManager->getObject(Gd2::class);
+        $this->adapter = $this->objectManager->getObject(\Magento\Framework\Image\Adapter\Gd2::class);
     }
 
     /**
@@ -63,7 +50,7 @@ class Gd2Test extends TestCase
      */
     public function testParentClass()
     {
-        $this->assertInstanceOf(AbstractAdapter::class, $this->adapter);
+        $this->assertInstanceOf(\Magento\Framework\Image\Adapter\AbstractAdapter::class, $this->adapter);
     }
 
     /**
@@ -122,6 +109,7 @@ class Gd2Test extends TestCase
 
     /**
      * Test if open() method resets cached fileType
+     *
      */
     public function testOpenDifferentTypes()
     {
@@ -152,15 +140,5 @@ class Gd2Test extends TestCase
         $type2 = $this->adapter->getImageType();
 
         $this->assertNotEquals($type1, $type2);
-    }
-
-    /**
-     * Test open() with invalid URL.
-     */
-    public function testOpenInvalidURL()
-    {
-        $this->expectException(\InvalidArgumentException::class);
-
-        $this->adapter->open('bar://foo.bar');
     }
 }

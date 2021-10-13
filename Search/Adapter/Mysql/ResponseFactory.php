@@ -8,7 +8,7 @@ namespace Magento\Framework\Search\Adapter\Mysql;
 /**
  * Response Factory
  *
- * @deprecated 102.0.0
+ * @deprecated
  * @see \Magento\ElasticSearch
  */
 class ResponseFactory
@@ -68,8 +68,7 @@ class ResponseFactory
             \Magento\Framework\Search\Response\QueryResponse::class,
             [
                 'documents' => $documents,
-                'aggregations' => $aggregations,
-                'total' => $rawResponse['total']
+                'aggregations' => $aggregations
             ]
         );
     }

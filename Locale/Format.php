@@ -5,16 +5,8 @@
  */
 namespace Magento\Framework\Locale;
 
-/**
- * Price locale format.
- */
 class Format implements \Magento\Framework\Locale\FormatInterface
 {
-    /**
-     * Japan locale code
-     */
-    private const JAPAN_LOCALE_CODE = 'ja_JP';
-
     /**
      * @var \Magento\Framework\App\ScopeResolverInterface
      */
@@ -46,8 +38,7 @@ class Format implements \Magento\Framework\Locale\FormatInterface
     }
 
     /**
-     * Returns the first found number from a string.
-     *
+     * Returns the first found number from a string
      * Parsing depends on given locale (grouping and decimal)
      *
      * Examples for input:
@@ -86,16 +77,7 @@ class Format implements \Magento\Framework\Locale\FormatInterface
                 $value = str_replace(',', '', $value);
             }
         } elseif ($separatorComa !== false) {
-            $locale = $this->_localeResolver->getLocale();
-            /**
-             * It's hard code for Japan locale.
-             * Comma separator uses as group separator: 4,000 saves as 4,000.00
-             */
-            $value = str_replace(
-                ',',
-                $locale === self::JAPAN_LOCALE_CODE ? '' : '.',
-                $value
-            );
+            $value = str_replace(',', '.', $value);
         }
 
         return (float)$value;
@@ -118,7 +100,7 @@ class Format implements \Magento\Framework\Locale\FormatInterface
         }
 
         $formatter = new \NumberFormatter(
-            $currency->getCode() ? $localeCode . '@currency=' . $currency->getCode() : $localeCode,
+            $localeCode . '@currency=' . $currency->getCode(),
             \NumberFormatter::CURRENCY
         );
         $format = $formatter->getPattern();

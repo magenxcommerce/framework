@@ -1,16 +1,12 @@
 <?php
 /**
+ * Name builder
+ *
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
 namespace Magento\Framework\Code;
 
-/**
- * Builds namespace with classname out of the parts.
- *
- * @api
- * @since 100.0.2
- */
 class NameBuilder
 {
     /**
@@ -27,7 +23,7 @@ class NameBuilder
         $separator = '\\';
         $string = join($separator, $parts);
         $string = str_replace('_', $separator, $string);
-        $className = ucwords($string, $separator);
+        $className = str_replace(' ', $separator, ucwords(str_replace($separator, ' ', $string)));
         return $className;
     }
 }

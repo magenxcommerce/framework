@@ -25,7 +25,7 @@ use Magento\Framework\Search\RequestInterface;
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @api
- * @deprecated 102.0.0
+ * @deprecated
  * @see \Magento\ElasticSearch
  * @since 100.0.2
  */

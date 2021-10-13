@@ -3,97 +3,39 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
 
 namespace Magento\Framework\Locale\Test\Unit;
 
-use Magento\Framework\Locale\ConfigInterface;
-use Magento\Framework\Locale\ResolverInterface;
-use Magento\Framework\Locale\TranslatedLists;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
-
-class TranslatedListsTest extends TestCase
+class TranslatedListsTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @var TranslatedLists
+     * @var \Magento\Framework\Locale\TranslatedLists
      */
-    private $listsModel;
+    protected $listsModel;
 
     /**
-     * @var MockObject | ConfigInterface
+     * @var  \PHPUnit_Framework_MockObject_MockObject | \Magento\Framework\Locale\ConfigInterface
      */
-    private $mockConfig;
+    protected $mockConfig;
 
     /**
-     * @var MockObject | ResolverInterface
+     * @var  \PHPUnit_Framework_MockObject_MockObject | \Magento\Framework\Locale\ResolverInterface
      */
-    private $mockLocaleResolver;
+    protected $mockLocaleResolver;
 
-    /**
-     * @var array
-     */
-    private $expectedCurrencies = [
-        'USD',
-        'EUR',
-        'UAH',
-        'GBP',
-    ];
-
-    /**
-     * @var array
-     */
-    private $expectedLocales = [
-        'en_US',
-        'en_GB',
-        'uk_UA',
-        'de_DE',
-        'sr_Cyrl_RS',
-        'sr_Latn_RS'
-    ];
-
-    /**
-     * @var string[]
-     */
-    private $languages = [
-        'en_US' => 'English',
-        'en_GB' => 'English',
-        'uk_UA' => 'Ukrainian',
-        'de_DE' => 'German',
-        'sr_Cyrl_RS' => 'Serbian',
-        'sr_Latn_RS' => 'Serbian'
-    ];
-
-    /**
-     * @var string[]
-     */
-    private $countries = [
-        'en_US' => 'United States',
-        'en_GB' => 'United Kingdom',
-        'uk_UA' => 'Ukraine',
-        'de_DE' => 'Germany',
-        'sr_Cyrl_RS' => 'Serbia',
-        'sr_Latn_RS' => 'Serbia'
-    ];
-
-    protected function setUp(): void
+    protected function setUp()
     {
-        $this->mockConfig = $this->getMockBuilder(ConfigInterface::class)
+        $this->mockConfig = $this->getMockBuilder(\Magento\Framework\Locale\ConfigInterface::class)
             ->disableOriginalConstructor()
-            ->getMockForAbstractClass();
-        $this->mockConfig->method('getAllowedLocales')
-            ->willReturn(array_keys($this->expectedLocales));
-        $this->mockConfig->method('getAllowedCurrencies')
-            ->willReturn($this->expectedCurrencies);
-
-        $this->mockLocaleResolver = $this->getMockBuilder(ResolverInterface::class)
+            ->getMock();
+        $this->mockLocaleResolver = $this->getMockBuilder(\Magento\Framework\Locale\ResolverInterface::class)
             ->disableOriginalConstructor()
-            ->getMockForAbstractClass();
+            ->getMock();
         $this->mockLocaleResolver->expects($this->once())
             ->method('getLocale')
-            ->willReturn('en_US');
+            ->will($this->returnValue('en_US'));
 
-        $this->listsModel = new TranslatedLists(
+        $this->listsModel = new \Magento\Framework\Locale\TranslatedLists(
             $this->mockConfig,
             $this->mockLocaleResolver
         );
@@ -121,11 +63,17 @@ class TranslatedListsTest extends TestCase
 
     public function testGetOptionCurrencies()
     {
+        $allowedCurrencies = ['USD', 'EUR', 'GBP', 'UAH'];
+
+        $this->mockConfig->expects($this->once())
+            ->method('getAllowedCurrencies')
+            ->will($this->returnValue($allowedCurrencies));
+
         $expectedResults = ['USD', 'EUR', 'GBP', 'UAH'];
 
         $currencyList = $this->listsModel->getOptionCurrencies();
         $currencyCodes = array_map(
-            static function ($data) {
+            function ($data) {
                 return $data['value'];
             },
             $currencyList
@@ -180,74 +128,44 @@ class TranslatedListsTest extends TestCase
 
     public function testGetOptionLocales()
     {
-        $expected = $this->getExpectedLocales();
-        $locales = array_intersect(
-            $expected,
-            $this->convertOptionLocales($this->listsModel->getOptionLocales())
-        );
-        $this->assertEquals($expected, $locales);
+        $this->setupForOptionLocales();
+
+        $expectedResults = ['en_US', 'uk_UA', 'de_DE'];
+
+        $list = $this->listsModel->getOptionLocales();
+        foreach ($expectedResults as $value) {
+            $found = false;
+            foreach ($list as $item) {
+                $found = $found || ($value == $item['value']);
+            }
+            $this->assertTrue($found);
+        }
     }
 
     public function testGetTranslatedOptionLocales()
     {
-        $expected = $this->getExpectedTranslatedLocales();
-        $locales = array_intersect(
-            $expected,
-            $this->convertOptionLocales($this->listsModel->getTranslatedOptionLocales())
-        );
-        $this->assertEquals($expected, $locales);
+        $this->setupForOptionLocales();
+
+        $expectedResults = ['en_US', 'uk_UA', 'de_DE'];
+
+        $list = $this->listsModel->getOptionLocales();
+        foreach ($expectedResults as $value) {
+            $found = false;
+            foreach ($list as $item) {
+                $found = $found || ($value == $item['value']);
+            }
+            $this->assertTrue($found);
+        }
     }
 
     /**
-     * @param array $optionLocales
-     * @return array
+     * Setup for option locales
      */
-    private function convertOptionLocales($optionLocales): array
+    protected function setupForOptionLocales()
     {
-        $result = [];
-
-        foreach ($optionLocales as $optionLocale) {
-            $result[$optionLocale['value']] = $optionLocale['label'];
-        }
-
-        return $result;
-    }
-
-    /**
-     * Expected translated locales list.
-     *
-     * @return string[]
-     */
-    private function getExpectedTranslatedLocales(): array
-    {
-        $expected = [];
-        foreach ($this->expectedLocales as $locale) {
-            $script = \Locale::getDisplayScript($locale);
-            $scriptTranslated = $script ? \Locale::getDisplayScript($locale, $locale) . ', ' : '';
-            $expected[$locale] = ucwords(\Locale::getDisplayLanguage($locale, $locale))
-                . ' (' . $scriptTranslated
-                . \Locale::getDisplayRegion($locale, $locale) . ') / '
-                . $this->languages[$locale]
-                . ' (' . ($script ? $script . ', ' : '') . $this->countries[$locale] . ')';
-        }
-
-        return $expected;
-    }
-
-    /**
-     * Expected locales list.
-     *
-     * @return string[]
-     */
-    private function getExpectedLocales(): array
-    {
-        $expected = [];
-        foreach ($this->expectedLocales as $locale) {
-            $script = \Locale::getScript($locale);
-            $scriptDisplayed = $script ? \Locale::getDisplayScript($locale) . ', ' : '';
-            $expected[$locale] = $this->languages[$locale] . ' (' . $scriptDisplayed . $this->countries[$locale] . ')';
-        }
-
-        return $expected;
+        $allowedLocales = ['en_US', 'uk_UA', 'de_DE'];
+        $this->mockConfig->expects($this->once())
+            ->method('getAllowedLocales')
+            ->will($this->returnValue($allowedLocales));
     }
 }

@@ -3,21 +3,19 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
 
 namespace Magento\Framework\App\Test\Unit;
 
-use Magento\Framework\App\ErrorHandler;
-use PHPUnit\Framework\TestCase;
+use \Magento\Framework\App\ErrorHandler;
 
-class ErrorHandlerTest extends TestCase
+class ErrorHandlerTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @var ErrorHandler
+     * @var \Magento\Framework\App\ErrorHandler
      */
     protected $object;
 
-    protected function setUp(): void
+    protected function setUp()
     {
         $this->object = new ErrorHandler();
     }
@@ -58,9 +56,9 @@ class ErrorHandlerTest extends TestCase
         $errorFile = 'test_file';
         $errorLine = 'test_error_line';
 
-        $expectedExceptionMessage = sprintf('%s: %s in %s on line %s', $errorPhrase, $errorStr, $errorFile, $errorLine);
+        $exceptedExceptionMessage = sprintf('%s: %s in %s on line %s', $errorPhrase, $errorStr, $errorFile, $errorLine);
         $this->expectException('Exception');
-        $this->expectExceptionMessage($expectedExceptionMessage);
+        $this->expectExceptionMessage($exceptedExceptionMessage);
 
         $this->object->handler($errorNo, $errorStr, $errorFile, $errorLine);
     }

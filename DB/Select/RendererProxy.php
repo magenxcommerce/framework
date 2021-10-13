@@ -56,8 +56,6 @@ class RendererProxy extends SelectRenderer
     }
 
     /**
-     * Remove links to other objects.
-     *
      * @return array
      */
     public function __sleep()
@@ -101,7 +99,7 @@ class RendererProxy extends SelectRenderer
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function render(\Magento\Framework\DB\Select $select, $sql = '')
     {

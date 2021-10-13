@@ -15,7 +15,7 @@ use Magento\Framework\Search\Request\BucketInterface as RequestBucketInterface;
 /**
  * MySQL search dynamic aggregation builder.
  *
- * @deprecated 102.0.0
+ * @deprecated
  * @see \Magento\ElasticSearch
  */
 class Dynamic implements BucketInterface

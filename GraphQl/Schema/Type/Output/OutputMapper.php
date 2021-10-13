@@ -7,28 +7,50 @@ declare(strict_types=1);
 
 namespace Magento\Framework\GraphQl\Schema\Type\Output;
 
+use Magento\Framework\GraphQl\ConfigInterface;
 use Magento\Framework\GraphQl\Schema\Type\OutputTypeInterface;
-use Magento\Framework\GraphQl\Schema\Type\TypeRegistry;
+use Magento\Framework\GraphQl\Schema\TypeFactory;
 use Magento\Framework\GraphQl\Exception\GraphQlInputException;
 use Magento\Framework\Phrase;
 
 /**
- * Map type names to their output type/interface/enum classes.
+ * Map type names to their output type/interface classes.
  */
 class OutputMapper
 {
     /**
-     * @var TypeRegistry
+     * @var OutputFactory
      */
-    private $typeRegistry;
+    private $outputFactory;
 
     /**
-     * @param TypeRegistry $typeRegistry
+     * @var OutputTypeInterface[]
+     */
+    private $outputTypes;
+
+    /**
+     * @var TypeFactory
+     */
+    private $typeFactory;
+
+    /**
+     * @var ConfigInterface
+     */
+    private $config;
+
+    /**
+     * @param OutputFactory $outputFactory
+     * @param TypeFactory $typeFactory
+     * @param ConfigInterface $config
      */
     public function __construct(
-        TypeRegistry $typeRegistry
+        OutputFactory $outputFactory,
+        TypeFactory $typeFactory,
+        ConfigInterface $config
     ) {
-        $this->typeRegistry = $typeRegistry;
+        $this->outputFactory = $outputFactory;
+        $this->config = $config;
+        $this->typeFactory = $typeFactory;
     }
 
     /**
@@ -40,13 +62,16 @@ class OutputMapper
      */
     public function getOutputType($typeName)
     {
-        $outputType = $this->typeRegistry->get($typeName);
-
-        if (!$outputType instanceof OutputTypeInterface) {
-            throw new GraphQlInputException(
-                new Phrase("Type '{$typeName}' was requested but is not declared in the GraphQL schema.")
-            );
+        if (!isset($this->outputTypes[$typeName])) {
+            $configElement = $this->config->getConfigElement($typeName);
+            $this->outputTypes[$typeName] = $this->outputFactory->create($configElement);
+            if (!($this->outputTypes[$typeName] instanceof OutputTypeInterface)) {
+                throw new GraphQlInputException(
+                    new Phrase("Type '{$typeName}' was requested but is not declared in the GraphQL schema.")
+                );
+            }
         }
-        return $outputType;
+
+        return $this->outputTypes[$typeName];
     }
 }

@@ -9,9 +9,6 @@ namespace Magento\Framework\App\Utility;
 
 use Magento\Framework\Component\ComponentRegistrar;
 
-/**
- * Utility for class names processing
- */
 class Classes
 {
     /**
@@ -239,7 +236,7 @@ class Classes
     /**
      * Check if instance is virtual type
      *
-     * @param string $className
+     * @param $className string
      * @return bool
      */
     public static function isVirtual($className)

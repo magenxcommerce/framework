@@ -10,7 +10,7 @@ use Magento\Framework\Search\Request\FilterInterface;
 /**
  * MySQL search filter pre-processor.
  *
- * @deprecated 102.0.0
+ * @deprecated
  * @see \Magento\ElasticSearch
  */
 interface PreprocessorInterface

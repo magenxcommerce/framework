@@ -11,7 +11,7 @@ use Magento\Framework\Search\Dynamic\IntervalInterface;
 /**
  * MySQL search aggregation interval.
  *
- * @deprecated 102.0.0
+ * @deprecated
  * @see \Magento\ElasticSearch
  */
 class Interval implements IntervalInterface

@@ -3,21 +3,11 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
-
 namespace Magento\Framework\Config\Test\Unit\Dom;
 
-use Magento\Framework\Config\Dom\ArrayNodeConfig;
-use Magento\Framework\Config\Dom\NodePathMatcher;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
+use \Magento\Framework\Config\Dom\ArrayNodeConfig;
 
-/**
- * Test for
- *
- * @see ArrayNodeConfig
- */
-class ArrayNodeConfigTest extends TestCase
+class ArrayNodeConfigTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var ArrayNodeConfig
@@ -25,13 +15,13 @@ class ArrayNodeConfigTest extends TestCase
     protected $object;
 
     /**
-     * @var NodePathMatcher|MockObject
+     * @var NodePathMatcher|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $nodePathMatcher;
 
-    protected function setUp(): void
+    protected function setUp()
     {
-        $this->nodePathMatcher = $this->createMock(NodePathMatcher::class);
+        $this->nodePathMatcher = $this->createMock(\Magento\Framework\Config\Dom\NodePathMatcher::class);
         $this->object = new ArrayNodeConfig(
             $this->nodePathMatcher,
             ['/root/assoc/one' => 'name', '/root/assoc/two' => 'id', '/root/assoc/three' => 'key'],
@@ -49,8 +39,8 @@ class ArrayNodeConfigTest extends TestCase
         )->with(
             '/root/numeric/one',
             $xpath
-        )->willReturn(
-            false
+        )->will(
+            $this->returnValue(false)
         );
         $this->nodePathMatcher->expects(
             $this->at(1)
@@ -59,8 +49,8 @@ class ArrayNodeConfigTest extends TestCase
         )->with(
             '/root/numeric/two',
             $xpath
-        )->willReturn(
-            true
+        )->will(
+            $this->returnValue(true)
         );
         $this->assertTrue($this->object->isNumericArray($xpath));
     }
@@ -75,8 +65,8 @@ class ArrayNodeConfigTest extends TestCase
         )->with(
             '/root/numeric/one',
             $xpath
-        )->willReturn(
-            false
+        )->will(
+            $this->returnValue(false)
         );
         $this->nodePathMatcher->expects(
             $this->at(1)
@@ -85,8 +75,8 @@ class ArrayNodeConfigTest extends TestCase
         )->with(
             '/root/numeric/two',
             $xpath
-        )->willReturn(
-            false
+        )->will(
+            $this->returnValue(false)
         );
         $this->nodePathMatcher->expects(
             $this->at(2)
@@ -95,8 +85,8 @@ class ArrayNodeConfigTest extends TestCase
         )->with(
             '/root/numeric/three',
             $xpath
-        )->willReturn(
-            false
+        )->will(
+            $this->returnValue(false)
         );
         $this->assertFalse($this->object->isNumericArray($xpath));
     }
@@ -111,8 +101,8 @@ class ArrayNodeConfigTest extends TestCase
         )->with(
             '/root/assoc/one',
             $xpath
-        )->willReturn(
-            false
+        )->will(
+            $this->returnValue(false)
         );
         $this->nodePathMatcher->expects(
             $this->at(1)
@@ -121,8 +111,8 @@ class ArrayNodeConfigTest extends TestCase
         )->with(
             '/root/assoc/two',
             $xpath
-        )->willReturn(
-            true
+        )->will(
+            $this->returnValue(true)
         );
         $this->assertEquals('id', $this->object->getAssocArrayKeyAttribute($xpath));
     }
@@ -137,8 +127,8 @@ class ArrayNodeConfigTest extends TestCase
         )->with(
             '/root/assoc/one',
             $xpath
-        )->willReturn(
-            false
+        )->will(
+            $this->returnValue(false)
         );
         $this->nodePathMatcher->expects(
             $this->at(1)
@@ -147,8 +137,8 @@ class ArrayNodeConfigTest extends TestCase
         )->with(
             '/root/assoc/two',
             $xpath
-        )->willReturn(
-            false
+        )->will(
+            $this->returnValue(false)
         );
         $this->nodePathMatcher->expects(
             $this->at(2)
@@ -157,8 +147,8 @@ class ArrayNodeConfigTest extends TestCase
         )->with(
             '/root/assoc/three',
             $xpath
-        )->willReturn(
-            false
+        )->will(
+            $this->returnValue(false)
         );
         $this->assertNull($this->object->getAssocArrayKeyAttribute($xpath));
     }

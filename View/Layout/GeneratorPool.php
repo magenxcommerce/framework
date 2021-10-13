@@ -38,7 +38,7 @@ class GeneratorPool
      * @param ScheduledStructure\Helper $helper
      * @param ConditionFactory $conditionFactory
      * @param \Psr\Log\LoggerInterface $logger
-     * @param array|null $generators
+     * @param array $generators
      */
     public function __construct(
         ScheduledStructure\Helper $helper,
@@ -68,7 +68,7 @@ class GeneratorPool
     }
 
     /**
-     * Traverse through all generators and generate all scheduled elements.
+     * Traverse through all generators and generate all scheduled elements
      *
      * @param Reader\Context $readerContext
      * @param Generator\Context $generatorContext
@@ -87,17 +87,11 @@ class GeneratorPool
      * Add generators to pool
      *
      * @param GeneratorInterface[] $generators
-     *
      * @return void
      */
     protected function addGenerators(array $generators)
     {
         foreach ($generators as $generator) {
-            if (!$generator instanceof GeneratorInterface) {
-                throw new \InvalidArgumentException(
-                    sprintf('Generator class must be an instance of %s', GeneratorInterface::class)
-                );
-            }
             $this->generators[$generator->getType()] = $generator;
         }
     }
@@ -138,9 +132,9 @@ class GeneratorPool
     }
 
     /**
-     * Reorder a child of a specified element.
+     * Reorder a child of a specified element
      *
-     * @param ScheduledStructure $scheduledStructure
+     * @param ScheduledStructure $scheduledStructure,
      * @param Data\Structure $structure
      * @param string $elementName
      * @return void
@@ -234,8 +228,6 @@ class GeneratorPool
     }
 
     /**
-     * Check visibility conditions exists in data.
-     *
      * @param array $data
      *
      * @return bool

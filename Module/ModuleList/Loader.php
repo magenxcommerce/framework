@@ -78,8 +78,6 @@ class Loader
     public function load(array $exclude = [])
     {
         $result = [];
-        $excludeSet = array_flip($exclude);
-
         foreach ($this->getModuleConfigs() as list($file, $contents)) {
             try {
                 $this->parser->loadXML($contents);
@@ -95,7 +93,7 @@ class Loader
 
             $data = $this->converter->convert($this->parser->getDom());
             $name = key($data);
-            if (!isset($excludeSet[$name])) {
+            if (!in_array($name, $exclude)) {
                 $result[$name] = $data[$name];
             }
         }
@@ -111,7 +109,8 @@ class Loader
      * </code>
      *
      * @return \Traversable
-     * @throws \Magento\Framework\Exception\FileSystemException
+     *
+     * @author Josh Di Fabio <joshdifabio@gmail.com>
      */
     private function getModuleConfigs()
     {
@@ -127,21 +126,16 @@ class Loader
      *
      * @param array $origList
      * @return array
-     * @throws \Exception
+     * @SuppressWarnings(PHPMD.UnusedLocalVariable)
      */
-    private function sortBySequence(array $origList): array
+    private function sortBySequence($origList)
     {
         ksort($origList);
-        $modules = $this->prearrangeModules($origList);
-
         $expanded = [];
-        foreach (array_keys($modules) as $moduleName) {
-            $sequence = $this->expandSequence($origList, $moduleName);
-            asort($sequence);
-
+        foreach ($origList as $moduleName => $value) {
             $expanded[] = [
                 'name' => $moduleName,
-                'sequence_set' => array_flip($sequence),
+                'sequence' => $this->expandSequence($origList, $moduleName),
             ];
         }
 
@@ -149,7 +143,7 @@ class Loader
         $total = count($expanded);
         for ($i = 0; $i < $total - 1; $i++) {
             for ($j = $i; $j < $total; $j++) {
-                if (isset($expanded[$i]['sequence_set'][$expanded[$j]['name']])) {
+                if (in_array($expanded[$j]['name'], $expanded[$i]['sequence'])) {
                     $temp = $expanded[$i];
                     $expanded[$i] = $expanded[$j];
                     $expanded[$j] = $temp;
@@ -166,27 +160,6 @@ class Loader
     }
 
     /**
-     * Prearrange all modules by putting those from Magento before the others
-     *
-     * @param array $modules
-     * @return array
-     */
-    private function prearrangeModules(array $modules): array
-    {
-        $breakdown = ['magento' => [], 'others' => []];
-
-        foreach ($modules as $moduleName => $moduleDetails) {
-            if (strpos($moduleName, 'Magento_') !== false) {
-                $breakdown['magento'][$moduleName] = $moduleDetails;
-            } else {
-                $breakdown['others'][$moduleName] = $moduleDetails;
-            }
-        }
-
-        return array_merge($breakdown['magento'], $breakdown['others']);
-    }
-
-    /**
      * Accumulate information about all transitive "sequence" references
      *
      * @param array $list
@@ -197,19 +170,18 @@ class Loader
      */
     private function expandSequence($list, $name, $accumulated = [])
     {
-        $accumulated[$name] = true;
+        $accumulated[] = $name;
         $result = $list[$name]['sequence'];
-        $allResults = [];
         foreach ($result as $relatedName) {
-            if (isset($accumulated[$relatedName])) {
-                throw new \LogicException("Circular sequence reference from '{$name}' to '{$relatedName}'.");
+            if (in_array($relatedName, $accumulated)) {
+                throw new \Exception("Circular sequence reference from '{$name}' to '{$relatedName}'.");
             }
             if (!isset($list[$relatedName])) {
                 continue;
             }
-            $allResults[] = $this->expandSequence($list, $relatedName, $accumulated);
+            $relatedResult = $this->expandSequence($list, $relatedName, $accumulated);
+            $result = array_unique(array_merge($result, $relatedResult));
         }
-        $allResults[] = $result;
-        return array_unique(array_merge(...$allResults));
+        return $result;
     }
 }

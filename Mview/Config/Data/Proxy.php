@@ -55,8 +55,6 @@ class Proxy extends \Magento\Framework\Mview\Config\Data implements
     }
 
     /**
-     * Remove links to objects.
-     *
      * @return array
      */
     public function __sleep()
@@ -102,7 +100,7 @@ class Proxy extends \Magento\Framework\Mview\Config\Data implements
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function merge(array $config)
     {
@@ -110,7 +108,7 @@ class Proxy extends \Magento\Framework\Mview\Config\Data implements
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function get($path = null, $default = null)
     {

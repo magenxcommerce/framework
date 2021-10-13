@@ -10,23 +10,15 @@ namespace Magento\Framework\Lock\Backend;
 use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Config\ConfigOptionsListConstants;
-use Magento\Framework\DB\ExpressionConverter;
-use Magento\Framework\Exception\FileSystemException;
-use Magento\Framework\Exception\RuntimeException;
+use Magento\Framework\Exception\AlreadyExistsException;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Phrase;
 
 /**
- * Implementation of the lock manager on the basis of MySQL.
+ * LockManager using the DB locks
  */
 class Database implements \Magento\Framework\Lock\LockManagerInterface
 {
-    /**
-     * Max time for lock is 1 week
-     *
-     * MariaDB does not support negative timeout value to get infinite timeout,
-     * so we set 1 week for lock timeout
-     */
-    private const MAX_LOCK_TIME = 604800;
-
     /**
      * @var ResourceConnection
      */
@@ -68,20 +60,30 @@ class Database implements \Magento\Framework\Lock\LockManagerInterface
      * @param string $name lock name
      * @param int $timeout How long to wait lock acquisition in seconds, negative value means infinite timeout
      * @return bool
-     * @throws FileSystemException
-     * @throws RuntimeException
-     * @throws \Zend_Db_Statement_Exception
+     * @throws InputException
+     * @throws AlreadyExistsException
      */
     public function lock(string $name, int $timeout = -1): bool
     {
-        if (!$this->deploymentConfig->isDbAvailable()) {
-            return true;
-        }
         $name = $this->addPrefix($name);
+
+        /**
+         * Before MySQL 5.7.5, only a single simultaneous lock per connection can be acquired.
+         * This limitation can be removed once MySQL minimum requirement has been raised,
+         * currently we support MySQL 5.6 way only.
+         */
+        if ($this->currentLock) {
+            throw new AlreadyExistsException(
+                new Phrase(
+                    'Current connection is already holding lock for $1, only single lock allowed',
+                    [$this->currentLock]
+                )
+            );
+        }
 
         $result = (bool)$this->resource->getConnection()->query(
             "SELECT GET_LOCK(?, ?);",
-            [$name, $timeout < 0 ? self::MAX_LOCK_TIME : $timeout]
+            [(string)$name, (int)$timeout]
         )->fetchColumn();
 
         if ($result === true) {
@@ -96,14 +98,10 @@ class Database implements \Magento\Framework\Lock\LockManagerInterface
      *
      * @param string $name lock name
      * @return bool
-     * @throws \Zend_Db_Statement_Exception
+     * @throws InputException
      */
     public function unlock(string $name): bool
     {
-        if (!$this->deploymentConfig->isDbAvailable()) {
-            return true;
-        }
-
         $name = $this->addPrefix($name);
 
         $result = (bool)$this->resource->getConnection()->query(
@@ -123,19 +121,15 @@ class Database implements \Magento\Framework\Lock\LockManagerInterface
      *
      * @param string $name lock name
      * @return bool
-     * @throws \Zend_Db_Statement_Exception
+     * @throws InputException
      */
     public function isLocked(string $name): bool
     {
-        if (!$this->deploymentConfig->isDbAvailable()) {
-            return false;
-        }
-
         $name = $this->addPrefix($name);
 
         return (bool)$this->resource->getConnection()->query(
             "SELECT IS_USED_LOCK(?);",
-            [$name]
+            [(string)$name]
         )->fetchColumn();
     }
 
@@ -145,12 +139,16 @@ class Database implements \Magento\Framework\Lock\LockManagerInterface
      * Limited to 64 characters in MySQL.
      *
      * @param string $name
-     * @return string
+     * @return string $name
+     * @throws InputException
      */
     private function addPrefix(string $name): string
     {
-        $prefix = $this->getPrefix() ? $this->getPrefix() . '|' : '';
-        $name = ExpressionConverter::shortenEntityName($prefix . $name, $prefix);
+        $name = $this->getPrefix() . '|' . $name;
+
+        if (strlen($name) > 64) {
+            throw new InputException(new Phrase('Lock name too long: %1...', [substr($name, 0, 64)]));
+        }
 
         return $name;
     }

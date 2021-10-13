@@ -8,7 +8,7 @@ namespace Magento\Framework\Search\Adapter\Mysql\Aggregation\Builder;
 /**
  * MySQL search aggregation container builder.
  *
- * @deprecated 102.0.0
+ * @deprecated
  * @see \Magento\ElasticSearch
  */
 class Container

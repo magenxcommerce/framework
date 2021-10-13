@@ -10,9 +10,6 @@ use Magento\Framework\Api\SearchCriteria\CollectionProcessorInterface;
 use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\Data\Collection\AbstractDb;
 
-/**
- * Search criteria join processor
- */
 class JoinProcessor implements CollectionProcessorInterface
 {
     /**
@@ -31,7 +28,7 @@ class JoinProcessor implements CollectionProcessorInterface
     private $appliedFields = [];
 
     /**
-     * @param CustomJoinInterface[] $customJoins
+     * @param CustomJoinInterface[] $customFilters
      * @param array $fieldMapping
      */
     public function __construct(

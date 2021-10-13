@@ -8,9 +8,8 @@ namespace Magento\Framework\Module;
 use Magento\Framework\Component\ComponentRegistrar;
 
 /**
- * Provide information of dependencies and conflicts in composer.json files.
- *
- * Mapping of package name to module name, and mapping of module name to package version.
+ * Provide information of dependencies and conflicts in composer.json files, mapping of package name to module name,
+ * and mapping of module name to package version
  */
 class PackageInfo
 {
@@ -177,7 +176,8 @@ class PackageInfo
     protected function convertPackageNameToModuleName($packageName)
     {
         $moduleName = str_replace('magento/module-', '', $packageName);
-        $moduleName = str_replace('-', '', ucwords($moduleName, '-'));
+        $moduleName = str_replace('-', ' ', $moduleName);
+        $moduleName = str_replace(' ', '', ucwords($moduleName));
 
         return 'Magento_' . $moduleName;
     }

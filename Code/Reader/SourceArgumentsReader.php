@@ -102,7 +102,7 @@ class SourceArgumentsReader
      * @param string $token
      * @return string
      *
-     * @deprecated 102.0.0 Not used anymore.
+     * @deprecated Not used anymore.
      */
     protected function removeToken($argument, $token)
     {

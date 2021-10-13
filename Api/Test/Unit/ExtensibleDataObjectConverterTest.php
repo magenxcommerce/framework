@@ -3,42 +3,36 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
 
 namespace Magento\Framework\Api\Test\Unit;
 
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Magento\Framework\Api\AbstractExtensibleObject;
 use Magento\Framework\Api\AttributeValue;
-use Magento\Framework\Api\ExtensibleDataInterface;
-use Magento\Framework\Api\ExtensibleDataObjectConverter;
-use Magento\Framework\Reflection\DataObjectProcessor;
-use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
 
-class ExtensibleDataObjectConverterTest extends TestCase
+class ExtensibleDataObjectConverterTest extends \PHPUnit\Framework\TestCase
 {
-    /** @var  ExtensibleDataObjectConverter */
+    /** @var  \Magento\Framework\Api\ExtensibleDataObjectConverter */
     protected $converter;
 
-    /** @var  DataObjectProcessor|MockObject */
+    /** @var  \Magento\Framework\Reflection\DataObjectProcessor|\PHPUnit_Framework_MockObject_MockObject */
     protected $processor;
 
-    /** @var  ExtensibleDataInterface|MockObject */
+    /** @var  \Magento\Framework\Api\ExtensibleDataInterface|\PHPUnit_Framework_MockObject_MockObject */
     protected $dataObject;
 
-    protected function setUp(): void
+    protected function setUp()
     {
-        $this->processor = $this->getMockBuilder(DataObjectProcessor::class)
+        $this->processor = $this->getMockBuilder(\Magento\Framework\Reflection\DataObjectProcessor::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->dataObject = $this->getMockBuilder(ExtensibleDataInterface::class)
+        $this->dataObject = $this->getMockBuilder(\Magento\Framework\Api\ExtensibleDataInterface::class)
             ->getMock();
 
         $objectManager = new ObjectManager($this);
         $this->converter = $objectManager->getObject(
-            ExtensibleDataObjectConverter::class,
+            \Magento\Framework\Api\ExtensibleDataObjectConverter::class,
             [
                 'dataObjectProcessor' => $this->processor,
             ]
@@ -89,17 +83,6 @@ class ExtensibleDataObjectConverterTest extends TestCase
                     AttributeValue::VALUE => 'custom_attribute_value_skip',
                 ],
             ],
-            'test' => [
-                0 => [
-                    '3rd_attribute_key' => '3rd_attribute_value',
-                    AbstractExtensibleObject::CUSTOM_ATTRIBUTES_KEY => [
-                        [
-                            AttributeValue::ATTRIBUTE_CODE => 'another_custom_attribute_code',
-                            AttributeValue::VALUE => 'another_custom_attribute_value',
-                        ]
-                    ]
-                ]
-            ]
         ];
 
         $resultArray = [
@@ -109,12 +92,6 @@ class ExtensibleDataObjectConverterTest extends TestCase
                 'custom_attribute_value_multi_1',
                 'custom_attribute_value_multi_2',
             ],
-            'test' => [
-                0 => [
-                    '3rd_attribute_key' => '3rd_attribute_value',
-                    'another_custom_attribute_code' => 'another_custom_attribute_value',
-                ]
-            ]
         ];
 
         $this->processor->expects($this->any())

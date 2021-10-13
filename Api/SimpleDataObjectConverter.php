@@ -8,9 +8,6 @@ namespace Magento\Framework\Api;
 use Magento\Framework\Convert\ConvertArray;
 use Magento\Framework\Reflection\DataObjectProcessor;
 
-/**
- * Data object converter.
- */
 class SimpleDataObjectConverter
 {
     /**
@@ -58,7 +55,7 @@ class SimpleDataObjectConverter
             if (is_array($fieldValue) && !$this->_isSimpleSequentialArray($fieldValue)) {
                 $fieldValue = $this->convertKeysToCamelCase($fieldValue);
             }
-            $fieldName = lcfirst(str_replace('_', '', ucwords($fieldName, '_')));
+            $fieldName = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $fieldName))));
             $response[$fieldName] = $fieldValue;
         }
         return $response;
@@ -148,7 +145,7 @@ class SimpleDataObjectConverter
      */
     public static function snakeCaseToUpperCamelCase($input)
     {
-        return str_replace('_', '', ucwords($input, '_'));
+        return str_replace(' ', '', ucwords(str_replace('_', ' ', $input)));
     }
 
     /**
@@ -159,13 +156,14 @@ class SimpleDataObjectConverter
      */
     public static function snakeCaseToCamelCase($input)
     {
-        return lcfirst(self::snakeCaseToUpperCamelCase($input));
+        return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $input))));
     }
 
     /**
      * Convert a CamelCase string read from method into field key in snake_case
      *
-     * For example [DefaultShipping => default_shipping, Postcode => postcode]
+     * e.g. DefaultShipping => default_shipping
+     *      Postcode => postcode
      *
      * @param string $name
      * @return string

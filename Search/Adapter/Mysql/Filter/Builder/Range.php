@@ -12,7 +12,7 @@ use Magento\Framework\Search\Request\FilterInterface as RequestFilterInterface;
 /**
  * Range filter builder.
  *
- * @deprecated 102.0.0
+ * @deprecated
  * @see \Magento\ElasticSearch
  */
 class Range implements FilterInterface

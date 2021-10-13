@@ -38,8 +38,6 @@ class Validator
     }
 
     /**
-     * Validate response schema definition for topic
-     *
      * @param string $responseSchema
      * @param string $topicName
      * @return void
@@ -48,12 +46,6 @@ class Validator
     {
         try {
             $this->validateType($responseSchema);
-        } catch (\InvalidArgumentException $e) {
-            throw new \LogicException(
-                'Response schema definition has service class with wrong annotated methods',
-                $e->getCode(),
-                $e
-            );
         } catch (\Exception $e) {
             throw new \LogicException(
                 sprintf(
@@ -67,8 +59,6 @@ class Validator
     }
 
     /**
-     * Validate request schema definition for topic
-     *
      * @param string $requestSchema
      * @param string $topicName
      * @return void
@@ -77,12 +67,6 @@ class Validator
     {
         try {
             $this->validateType($requestSchema);
-        } catch (\InvalidArgumentException $e) {
-            throw new \LogicException(
-                'Request schema definition has service class with wrong annotated methods',
-                $e->getCode(),
-                $e
-            );
         } catch (\Exception $e) {
             throw new \LogicException(
                 sprintf(
@@ -96,8 +80,6 @@ class Validator
     }
 
     /**
-     * Validate service method specified in the definition of handler
-     *
      * @param string $serviceName
      * @param string $methodName
      * @param string $handlerName
@@ -127,7 +109,6 @@ class Validator
      * @param string $typeName
      * @return $this
      * @throws \Exception In case when type is invalid
-     * @throws \InvalidArgumentException if methods don't have annotation
      */
     protected function validateType($typeName)
     {

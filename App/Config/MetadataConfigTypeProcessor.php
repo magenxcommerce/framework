@@ -126,13 +126,10 @@ class MetadataConfigTypeProcessor implements PostProcessorInterface
                 //Failed to load scopes or config source, perhaps config data received is outdated.
                 return $data;
             }
-
-            if (isset($metadata['backendModel'])) {
-                /** @var \Magento\Framework\App\Config\Data\ProcessorInterface $processor */
-                $processor = $this->_processorFactory->get($metadata['backendModel']);
-                $value = $processor->processValue($this->_getValue($data, $path));
-                $this->_setValue($data, $path, $value);
-            }
+            /** @var \Magento\Framework\App\Config\Data\ProcessorInterface $processor */
+            $processor = $this->_processorFactory->get($metadata['backendModel']);
+            $value = $processor->processValue($this->_getValue($data, $path));
+            $this->_setValue($data, $path, $value);
         }
 
         return $data;

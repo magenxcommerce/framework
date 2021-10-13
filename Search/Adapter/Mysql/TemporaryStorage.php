@@ -16,7 +16,7 @@ use Magento\Framework\DB\Select;
  * MySQL search temporary storage.
  *
  * @api
- * @deprecated 102.0.0
+ * @deprecated
  * @see \Magento\ElasticSearch
  * @since 100.0.2
  */
@@ -153,7 +153,7 @@ class TemporaryStorage
             self::FIELD_SCORE,
             Table::TYPE_DECIMAL,
             [32, 16],
-            ['unsigned' => true, 'nullable' => true],
+            ['unsigned' => true, 'nullable' => false],
             'Score'
         );
         $table->setOption('type', 'memory');

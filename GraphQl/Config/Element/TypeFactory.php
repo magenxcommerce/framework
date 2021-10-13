@@ -22,20 +22,28 @@ class TypeFactory implements ConfigElementFactoryInterface
     private $objectManager;
 
     /**
-     * @var FieldsFactory
+     * @var ArgumentFactory
      */
-    private $fieldsFactory;
+    private $argumentFactory;
+
+    /**
+     * @var FieldFactory
+     */
+    private $fieldFactory;
 
     /**
      * @param ObjectManagerInterface $objectManager
-     * @param FieldsFactory $fieldsFactory
+     * @param ArgumentFactory $argumentFactory
+     * @param FieldFactory $fieldFactory
      */
     public function __construct(
         ObjectManagerInterface $objectManager,
-        FieldsFactory $fieldsFactory
+        ArgumentFactory $argumentFactory,
+        FieldFactory $fieldFactory
     ) {
         $this->objectManager = $objectManager;
-        $this->fieldsFactory = $fieldsFactory;
+        $this->argumentFactory = $argumentFactory;
+        $this->fieldFactory = $fieldFactory;
     }
 
     /**
@@ -46,9 +54,18 @@ class TypeFactory implements ConfigElementFactoryInterface
      */
     public function createFromConfigData(array $data): ConfigElementInterface
     {
-        $fieldsData = $data['fieldsInQuery'] ?? ($data['fields'] ?? []);
-        $fields = $this->fieldsFactory->createFromConfigData($fieldsData);
-
+        $fields = [];
+        $data['fields'] = isset($data['fields']) ? $data['fields'] : [];
+        foreach ($data['fields'] as $field) {
+            $arguments = [];
+            foreach ($field['arguments'] as $argument) {
+                $arguments[$argument['name']] = $this->argumentFactory->createFromConfigData($argument);
+            }
+            $fields[$field['name']] = $this->fieldFactory->createFromConfigData(
+                $field,
+                $arguments
+            );
+        }
         return $this->create(
             $data,
             $fields
@@ -56,10 +73,10 @@ class TypeFactory implements ConfigElementFactoryInterface
     }
 
     /**
-     * Create type object based off array of configured GraphQL Type data.
+     * Create type object based off array of configured GraphQL Output/InputType data.
      *
      * Type data must contain name and the type's fields. Optional data includes 'implements' (i.e. the interfaces
-     * implemented by the types), and description.
+     * implemented by the types), and description. An InputType cannot implement an interface.
      *
      * @param array $typeData
      * @param array $fields

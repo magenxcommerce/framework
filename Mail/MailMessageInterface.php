@@ -9,9 +9,6 @@ namespace Magento\Framework\Mail;
  * Mail Message interface
  *
  * @api
- * @deprecated 102.0.4
- * @see \Magento\Framework\Mail\EmailMessageInterface
- * @since 101.0.8
  */
 interface MailMessageInterface extends MessageInterface
 {
@@ -20,7 +17,6 @@ interface MailMessageInterface extends MessageInterface
      *
      * @param string $html
      * @return $this
-     * @since 101.0.8
      */
     public function setBodyHtml($html);
 
@@ -29,7 +25,6 @@ interface MailMessageInterface extends MessageInterface
      *
      * @param string $text
      * @return $this
-     * @since 101.0.8
      */
     public function setBodyText($text);
 
@@ -37,7 +32,6 @@ interface MailMessageInterface extends MessageInterface
      * Get message source code.
      *
      * @return string
-     * @since 101.0.8
      */
     public function getRawMessage();
 }

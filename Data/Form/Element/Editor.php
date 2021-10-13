@@ -6,10 +6,7 @@
 
 namespace Magento\Framework\Data\Form\Element;
 
-use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Escaper;
-use Magento\Framework\Math\Random;
-use Magento\Framework\View\Helper\SecureHtmlRenderer;
 
 /**
  * Form editor element
@@ -24,24 +21,12 @@ class Editor extends Textarea
     private $serializer;
 
     /**
-     * @var SecureHtmlRenderer
-     */
-    private $secureRenderer;
-
-    /**
-     * @var Random
-     */
-    private $random;
-
-    /**
      * Editor constructor.
      * @param Factory $factoryElement
      * @param CollectionFactory $factoryCollection
      * @param Escaper $escaper
      * @param array $data
      * @param \Magento\Framework\Serialize\Serializer\Json|null $serializer
-     * @param Random|null $random
-     * @param SecureHtmlRenderer|null $secureRenderer
      * @throws \RuntimeException
      */
     public function __construct(
@@ -49,9 +34,7 @@ class Editor extends Textarea
         CollectionFactory $factoryCollection,
         Escaper $escaper,
         $data = [],
-        \Magento\Framework\Serialize\Serializer\Json $serializer = null,
-        ?Random $random = null,
-        ?SecureHtmlRenderer $secureRenderer = null
+        \Magento\Framework\Serialize\Serializer\Json $serializer = null
     ) {
         parent::__construct($factoryElement, $factoryCollection, $escaper, $data);
 
@@ -62,15 +45,11 @@ class Editor extends Textarea
             $this->setType('textarea');
             $this->setExtType('textarea');
         }
-        $this->serializer = $serializer ?? ObjectManager::getInstance()
-                ->get(\Magento\Framework\Serialize\Serializer\Json::class);
-        $this->random = $random ?? ObjectManager::getInstance()->get(Random::class);
-        $this->secureRenderer = $secureRenderer ?? ObjectManager::getInstance()->get(SecureHtmlRenderer::class);
+        $this->serializer = $serializer ?: \Magento\Framework\App\ObjectManager::getInstance()
+            ->get(\Magento\Framework\Serialize\Serializer\Json::class);
     }
 
     /**
-     * Returns buttons translation
-     *
      * @return array
      */
     protected function getButtonTranslations()
@@ -85,8 +64,6 @@ class Editor extends Textarea
     }
 
     /**
-     * Returns JS config
-     *
      * @return bool|string
      * @throws \InvalidArgumentException
      */
@@ -103,9 +80,8 @@ class Editor extends Textarea
 
     /**
      * Fetch config options from plugin.  If $key is passed, return only that option key's value
-     *
      * @param string $pluginName
-     * @param string|null $key
+     * @param null $key
      * @return mixed all options or single option if $key is passed; null if nonexistent
      */
     public function getPluginConfigOptions($pluginName, $key = null)
@@ -125,25 +101,21 @@ class Editor extends Textarea
         $pluginOptions = $plugins[$pluginArrIndex]['options'];
 
         if ($key !== null) {
-            return $pluginOptions[$key] ?? null;
+            return isset($pluginOptions[$key]) ? $pluginOptions[$key] : null;
         } else {
             return $pluginOptions;
         }
     }
 
     /**
-     * Returns element html
-     *
      * @return string
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     public function getElementHtml()
     {
-        $js = $this->secureRenderer->renderTag(
-            'script',
-            ['type' => 'text/javascript'],
-            <<<script
-                //<![CDATA[
+        $js = '
+            <script type="text/javascript">
+            //<![CDATA[
                 openEditorPopup = function(url, name, specs, parent) {
                     if ((typeof popups == "undefined") || popups[name] == undefined || popups[name].closed) {
                         if (typeof popups == "undefined") {
@@ -163,10 +135,7 @@ class Editor extends Textarea
                     }
                 }
             //]]>
-script
-            ,
-            false
-        );
+            </script>';
 
         if ($this->isEnabled()) {
             $jsSetupObject = 'wysiwyg' . $this->getHtmlId();
@@ -213,21 +182,15 @@ script
             if ($this->getPluginConfigOptions('magentowidget', 'window_url')) {
                 $html = $this->_getButtonsHtml() . $js . parent::getElementHtml();
                 if ($this->getConfig('add_widgets')) {
-                    $html .= $this->secureRenderer->renderTag(
-                        'script',
-                        ['type' => 'text/javascript'],
-                        <<<script
-                            //<![CDATA[
-                            require(["jquery", "mage/translate", "mage/adminhtml/wysiwyg/widget"], function(jQuery){
-                                (function($) {
-                                    $.mage.translate.add({$this->serializer->serialize($this->getButtonTranslations())})
-                                })(jQuery);
-                            });
-                            //]]>'
-script
-                        ,
-                        false
-                    );
+                    $html .= '<script type="text/javascript">
+                    //<![CDATA[
+                    require(["jquery", "mage/translate", "mage/adminhtml/wysiwyg/widget"], function(jQuery){
+                        (function($) {
+                            $.mage.translate.add(' . $this->serializer->serialize($this->getButtonTranslations()) . ')
+                        })(jQuery);
+                    });
+                    //]]>
+                    </script>';
                 }
                 $html = $this->_wrapIntoContainer($html);
                 return $html;
@@ -237,8 +200,6 @@ script
     }
 
     /**
-     * Returns theme
-     *
      * @return mixed
      */
     public function getTheme()
@@ -316,19 +277,15 @@ script
 
         // Button to media images insertion window
         if ($this->getConfig('add_images')) {
-            $htmlId = $this->getHtmlId();
-            $url = $this->getConfig('files_browser_window_url')
-                . 'target_element_id/'
-                . $htmlId
-                . '/'
-                . (null !== $this->getConfig('store_id')
-                    ? 'store/' . $this->getConfig('store_id') . '/"'
-                    : '');
             $buttonsHtml .= $this->_getButtonHtml(
                 [
                     'title' => $this->translate('Insert Image...'),
-                    'onclick' => 'MediabrowserUtility.openDialog(\'' . $url
-                        . '\', null, null, null, { \'targetElementId\': \'' . $htmlId . '\' })',
+                    'onclick' => "MediabrowserUtility.openDialog('"
+                        . $this->getConfig('files_browser_window_url')
+                        . "target_element_id/" . $this->getHtmlId() . "/"
+                        . (null !== $this->getConfig('store_id') ? 'store/'
+                            . $this->getConfig('store_id') . '/' : '')
+                        . "')",
                     'class' => 'action-add-image plugin',
                     'style' => $visible ? '' : 'display:none',
                 ]
@@ -344,7 +301,7 @@ script
                         if (isset($buttonOptions['style'])) {
                             $configStyle = $buttonOptions['style'];
                         }
-                        $buttonOptions['style'] = 'display:none; ' . $configStyle;
+                        $buttonOptions = array_merge($buttonOptions, ['style' => 'display:none;' . $configStyle]);
                     }
                     $buttonsHtml .= $this->_getButtonHtml($buttonOptions);
                 }
@@ -386,8 +343,6 @@ script
     }
 
     /**
-     * Convert options
-     *
      * Convert options by replacing template constructions ( like {{var_name}} )
      * with data from this element object
      *
@@ -420,27 +375,20 @@ script
      */
     protected function _getButtonHtml($data)
     {
-        $id = empty($data['id']) ? 'buttonId' .$this->random->getRandomString(10) : $data['id'];
-
         $html = '<button type="button"';
         $html .= ' class="scalable ' . (isset($data['class']) ? $data['class'] : '') . '"';
-        $html .= ' id="' . $id . '"';
+        $html .= isset($data['onclick']) ? ' onclick="' . $data['onclick'] . '"' : '';
+        $html .= isset($data['style']) ? ' style="' . $data['style'] . '"' : '';
+        $html .= isset($data['id']) ? ' id="' . $data['id'] . '"' : '';
         $html .= '>';
         $html .= isset($data['title']) ? '<span><span><span>' . $data['title'] . '</span></span></span>' : '';
         $html .= '</button>';
-        if (!empty($data['onclick'])) {
-            $html .= $this->secureRenderer->renderEventListenerAsTag('onclick', $data['onclick'], "#$id");
-        }
-        if (!empty($data['style'])) {
-            $html .= $this->secureRenderer->renderStyleAsTag($data['style'], "#$id");
-        }
 
         return $html;
     }
 
     /**
      * Wraps Editor HTML into div if 'use_container' config option is set to true
-     *
      * If 'no_display' config option is set to true, the div will be invisible
      *
      * @param string $html HTML code to wrap
@@ -449,17 +397,14 @@ script
     protected function _wrapIntoContainer($html)
     {
         if (!$this->getConfig('use_container')) {
-            return '<div class="admin__control-wysiwig">' . $html . '</div>';
+            return '<div class="admin__control-wysiwig">' .$html . '</div>';
         }
 
-        $id = 'editor' .$this->getHtmlId();
-        $html = '<div id="' .$id .'" '
+        $html = '<div id="editor' . $this->getHtmlId() . '"'
+            . ($this->getConfig('no_display') ? ' style="display:none;"' : '')
             . ($this->getConfig('container_class') ? ' class="admin__control-wysiwig '
                 . $this->getConfig('container_class') . '"' : '')
             . '>' . $html . '</div>';
-        if ($this->getConfig('no_display')) {
-            $html .= $this->secureRenderer->renderStyleAsTag('display: none;', "#$id");
-        }
 
         return $html;
     }
@@ -518,8 +463,6 @@ script
     }
 
     /**
-     * Is Toggle Button Visible
-     *
      * @return bool
      */
     protected function isToggleButtonVisible()
@@ -537,14 +480,15 @@ script
     protected function getInlineJs($jsSetupObject, $forceLoad)
     {
         $jsString = '
+                <script type="text/javascript">
                 //<![CDATA[
-                window.tinyMCE_GZ = window.tinyMCE_GZ || {};
+                window.tinyMCE_GZ = window.tinyMCE_GZ || {}; 
                 window.tinyMCE_GZ.loaded = true;
                 require([
-                "jquery",
-                "mage/translate",
-                "mage/adminhtml/events",
-                "mage/adminhtml/wysiwyg/tiny_mce/setup",
+                "jquery", 
+                "mage/translate", 
+                "mage/adminhtml/events", 
+                "mage/adminhtml/wysiwyg/tiny_mce/setup", 
                 "mage/adminhtml/wysiwyg/widget"
                 ], function(jQuery){' .
             "\n" .
@@ -575,17 +519,13 @@ script
             $jsSetupObject .
             '));
                     varienGlobalEvents.attachEventHandler("formSubmit", editorFormValidationHandler);
+                    varienGlobalEvents.clearEventHandlers("open_browser_callback");
+                    varienGlobalEvents.attachEventHandler("open_browser_callback", ' .
+            $jsSetupObject .
+            '.openFileBrowser);
                 //]]>
-                });';
-        return $this->secureRenderer->renderTag('script', ['type' => 'text/javascript'], $jsString, false);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getHtmlId()
-    {
-        $suffix = $this->getConfig('dynamic_id') ? '${ $.wysiwygUniqueSuffix }' : '';
-        return parent::getHtmlId() . $suffix;
+                });
+                </script>';
+        return $jsString;
     }
 }

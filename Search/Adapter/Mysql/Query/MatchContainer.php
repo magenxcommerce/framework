@@ -13,7 +13,7 @@ use Magento\Framework\Search\Request\QueryInterface;
 /**
  * MySQL search query match container.
  *
- * @deprecated 102.0.0
+ * @deprecated
  * @see \Magento\ElasticSearch
  */
 class MatchContainer

@@ -4,19 +4,19 @@
  * See COPYING.txt for license details.
  */
 
-namespace Magento\Framework\Archive;
-
-use Magento\Framework\Archive\Helper\File;
-
 /**
  * Class to work with tar archives
  *
  * @author      Magento Core Team <core@magentocommerce.com>
  */
+namespace Magento\Framework\Archive;
+
+use Magento\Framework\Archive\Helper\File;
+
 class Tar extends \Magento\Framework\Archive\AbstractArchive implements \Magento\Framework\Archive\ArchiveInterface
 {
     /**
-     * The value of the tar block size
+     * Tar block size
      *
      * @const int
      */
@@ -85,8 +85,8 @@ class Tar extends \Magento\Framework\Archive\AbstractArchive implements \Magento
      */
     protected static function _getFormatParseHeader()
     {
-        return 'Z100name/Z8mode/Z8uid/Z8gid/Z12size/Z12mtime/Z8checksum/Z1type/Z100symlink/Z6magic/Z2version/' .
-            'Z32uname/Z32gname/Z8devmajor/Z8devminor/Z155prefix/Z12closer';
+        return 'a100name/a8mode/a8uid/a8gid/a12size/a12mtime/a8checksum/a1type/a100symlink/a6magic/a2version/' .
+            'a32uname/a32gname/a8devmajor/a8devminor/a155prefix/a12closer';
     }
 
     /**
@@ -259,7 +259,10 @@ class Tar extends \Magento\Framework\Archive\AbstractArchive implements \Magento
                 );
             }
 
-            $dirFiles = array_diff($dirFiles, ['..', '.']);
+            array_shift($dirFiles);
+            /* remove  './'*/
+            array_shift($dirFiles);
+            /* remove  '../'*/
 
             foreach ($dirFiles as $item) {
                 $this->_setCurrentFile($file . $item)->_createTar();

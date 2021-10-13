@@ -1,17 +1,13 @@
 <?php
 /**
+ *
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
-
 namespace Magento\Framework\App\Response\Http;
 
 use Magento\Framework\App\Filesystem\DirectoryList;
 
-/**
- * Class FileFactory serves to declare file content in response for download.
- */
 class FileFactory
 {
     /**
@@ -51,6 +47,7 @@ class FileFactory
      *
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings(PHPMD.ExitExpression)
      */
     public function create(
         $fileName,
@@ -71,7 +68,6 @@ class FileFactory
                 $isFile = true;
                 $file = $content['value'];
                 if (!$dir->isFile($file)) {
-                    // phpcs:ignore Magento2.Exceptions.DirectThrow
                     throw new \Exception((string)new \Magento\Framework\Phrase('File not found'));
                 }
                 $contentLength = $dir->stat($file)['size'];
@@ -90,7 +86,6 @@ class FileFactory
             if ($isFile) {
                 $stream = $dir->openFile($file, 'r');
                 while (!$stream->eof()) {
-                    // phpcs:ignore Magento2.Security.LanguageConstruct.DirectOutput
                     echo $stream->read(1024);
                 }
             } else {
@@ -98,7 +93,6 @@ class FileFactory
                 $file = $fileName;
                 $stream = $dir->openFile($fileName, 'r');
                 while (!$stream->eof()) {
-                    // phpcs:ignore Magento2.Security.LanguageConstruct.DirectOutput
                     echo $stream->read(1024);
                 }
             }

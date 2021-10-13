@@ -3,24 +3,12 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
-
 namespace Magento\Framework\DB\Helper\Mysql;
 
 use Magento\Framework\App\ResourceConnection;
 
-/**
- * MySQL Fulltext Query Builder
- */
 class Fulltext
 {
-    /**
-     * Characters that have special meaning in fulltext match syntax
-     *
-     * @var string
-     */
-    const SPECIAL_CHARACTERS = '-+<>*()~?';
-
     /**
      * FULLTEXT search in MySQL search mode "natural language"
      */
@@ -85,7 +73,8 @@ class Fulltext
     }
 
     /**
-     * Method for FULLTEXT search in Mysql; will add generated MATCH ($columns) AGAINST ('$expression' $mode) to $select
+     * Method for FULLTEXT search in Mysql, will added generated
+     * MATCH ($columns) AGAINST ('$expression' $mode) to where clause
      *
      * @param \Magento\Framework\DB\Select $select
      * @param string|string[] $columns Columns which add to MATCH ()
@@ -105,16 +94,5 @@ class Fulltext
         }
 
         return $select;
-    }
-
-    /**
-     * Remove special characters from fulltext query expression
-     *
-     * @param string $expression
-     * @return string
-     */
-    public function removeSpecialCharacters(string $expression): string
-    {
-        return str_replace(str_split(static::SPECIAL_CHARACTERS), '', $expression);
     }
 }

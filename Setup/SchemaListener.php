@@ -12,9 +12,6 @@ use Magento\Framework\Setup\SchemaListenerHandlers\SchemaListenerHandlerInterfac
 
 /**
  * Listen for all changes and record them in order to reuse later.
- *
- * @SuppressWarnings(PHPMD.TooManyPublicMethods)
- * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class SchemaListener
 {
@@ -64,8 +61,7 @@ class SchemaListener
         'SCALE' => 'scale',
         'UNSIGNED' => 'unsigned',
         'IDENTITY' => 'identity',
-        'PRIMARY' => 'primary',
-        'COMMENT' => 'comment',
+        'PRIMARY' => 'primary'
     ];
 
     /**
@@ -75,6 +71,7 @@ class SchemaListener
         'COLUMN_POSITION',
         'COLUMN_TYPE',
         'PRIMARY_POSITION',
+        'COMMENT'
     ];
 
     /**
@@ -93,6 +90,8 @@ class SchemaListener
     private $handlers;
 
     /**
+     * Constructor.
+     *
      * @param array $definitionMappers
      * @param array $handlers
      */
@@ -133,9 +132,7 @@ class SchemaListener
         $definition = $this->doColumnMapping($definition);
         $definition['name'] = strtolower($columnName);
         $definitionType = $definition['type'] === 'int' ? 'integer' : $definition['type'];
-        $columnComment = $definition['comment'] ?? null;
         $definition = $this->definitionMappers[$definitionType]->convertToDefinition($definition);
-        $definition['comment'] = $columnComment;
         if (isset($definition['default']) && $definition['default'] === false) {
             $definition['default'] = null; //uniform default values
         }
@@ -217,7 +214,7 @@ class SchemaListener
      * @param string $columnName
      * @param array $definition
      * @param string $primaryKeyName
-     * @param string|null $onCreate
+     * @param null $onCreate
      */
     public function addColumn($tableName, $columnName, $definition, $primaryKeyName = 'PRIMARY', $onCreate = null)
     {
@@ -451,7 +448,6 @@ class SchemaListener
      * @param array $foreignKeys
      * @param array $indexes
      * @param string $tableName
-     * @param string $engine
      */
     private function prepareConstraintsAndIndexes(array $foreignKeys, array $indexes, $tableName, $engine)
     {
@@ -482,16 +478,11 @@ class SchemaListener
      * Create table.
      *
      * @param Table $table
-     * @throws \Zend_Db_Exception
      */
     public function createTable(Table $table)
     {
         $engine = strtolower($table->getOption('type'));
-        $this->tables[$this->getModuleName()][strtolower($table->getName())] =
-            [
-                'engine' => $engine,
-                'comment' => $table->getComment(),
-            ];
+        $this->tables[$this->getModuleName()][strtolower($table->getName())]['engine'] = $engine;
         $this->prepareColumns($table->getName(), $table->getColumns());
         $this->prepareConstraintsAndIndexes($table->getForeignKeys(), $table->getIndexes(), $table->getName(), $engine);
     }
@@ -519,7 +510,7 @@ class SchemaListener
     /**
      * Drop table.
      *
-     * @param string $tableName
+     * @param $tableName
      */
     public function dropTable($tableName)
     {

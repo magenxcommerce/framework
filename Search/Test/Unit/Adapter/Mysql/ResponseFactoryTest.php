@@ -49,7 +49,6 @@ class ResponseFactoryTest extends \PHPUnit\Framework\TestCase
                 ['title' => 'twoTitle', 'description' => 'twoDescription'],
             ],
             'aggregations' => [],
-            'total' => 2
         ];
 
         $this->documentFactory->expects($this->at(0))->method('create')
@@ -62,7 +61,7 @@ class ResponseFactoryTest extends \PHPUnit\Framework\TestCase
         $this->objectManager->expects($this->once())->method('create')
             ->with(
                 $this->equalTo(\Magento\Framework\Search\Response\QueryResponse::class),
-                $this->equalTo(['documents' => ['document1', 'document2'], 'aggregations' => null, 'total' => 2])
+                $this->equalTo(['documents' => ['document1', 'document2'], 'aggregations' => null])
             )
             ->will($this->returnValue('QueryResponseObject'));
 

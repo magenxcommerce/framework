@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace Magento\Framework\GraphQl\Config\Element;
 
 /**
- * Class representing 'type' GraphQL config element.
+ * Describes all the configured data of an Output or Input type in GraphQL.
  */
 class Type implements TypeInterface
 {

@@ -3,35 +3,20 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
 
 namespace Magento\Framework\View\Test\Unit\Page\Config;
 
-use Magento\Framework\Escaper;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Phrase;
-use Magento\Framework\Stdlib\StringUtils;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
-use Magento\Framework\UrlInterface;
-use Magento\Framework\View\Asset\AssetInterface;
 use Magento\Framework\View\Asset\GroupedCollection;
-use Magento\Framework\View\Asset\MergeService;
-use Magento\Framework\View\Asset\PropertyGroup;
-use Magento\Framework\View\Page\Config;
-use Magento\Framework\View\Page\Config\Generator\Head;
-use Magento\Framework\View\Page\Config\Metadata\MsApplicationTileImage;
 use Magento\Framework\View\Page\Config\Renderer;
-use Magento\Framework\View\Page\Title;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
+use Magento\Framework\View\Page\Config\Generator;
 
 /**
  * Test for page config renderer model
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class RendererTest extends TestCase
+class RendererTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var Renderer
@@ -39,52 +24,47 @@ class RendererTest extends TestCase
     protected $renderer;
 
     /**
-     * @var Config|MockObject
+     * @var \Magento\Framework\View\Page\Config|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $pageConfigMock;
 
     /**
-     * @var AssetInterface|MockObject
+     * @var \Magento\Framework\View\Asset\AssetInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $assetInterfaceMock;
 
     /**
-     * @var MergeService|MockObject
+     * @var \Magento\Framework\View\Asset\MergeService|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $assetMergeServiceMock;
 
     /**
-     * @var UrlInterface|MockObject
+     * @var \Magento\Framework\UrlInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $urlBuilderMock;
 
     /**
-     * @var Escaper|MockObject
+     * @var \Magento\Framework\Escaper|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $escaperMock;
 
     /**
-     * @var StringUtils|MockObject
+     * @var \Magento\Framework\Stdlib\StringUtils|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $stringMock;
 
     /**
-     * @var LoggerInterface|MockObject
+     * @var \Psr\Log\LoggerInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $loggerMock;
 
     /**
-     * @var MsApplicationTileImage|MockObject
-     */
-    protected $msApplicationTileImageMock;
-
-    /**
-     * @var GroupedCollection|MockObject
+     * @var \Magento\Framework\View\Asset\GroupedCollection|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $assetsCollection;
 
     /**
-     * @var Title|MockObject
+     * @var \Magento\Framework\View\Page\Title|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $titleMock;
 
@@ -93,59 +73,54 @@ class RendererTest extends TestCase
      */
     protected $objectManagerHelper;
 
-    protected function setUp(): void
+    protected function setUp()
     {
-        $this->pageConfigMock = $this->getMockBuilder(Config::class)
+        $this->pageConfigMock = $this->getMockBuilder(\Magento\Framework\View\Page\Config::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->assetMergeServiceMock = $this->getMockBuilder(MergeService::class)
+        $this->assetMergeServiceMock = $this->getMockBuilder(\Magento\Framework\View\Asset\MergeService::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->urlBuilderMock = $this->getMockForAbstractClass(UrlInterface::class);
+        $this->urlBuilderMock = $this->getMockForAbstractClass(\Magento\Framework\UrlInterface::class);
 
-        $this->escaperMock = $this->getMockBuilder(Escaper::class)
+        $this->escaperMock = $this->getMockBuilder(\Magento\Framework\Escaper::class)
             ->disableOriginalConstructor()
             ->getMock();
         $this->escaperMock->expects($this->any())
             ->method('escapeHtml')
             ->willReturnArgument(0);
 
-        $this->stringMock = $this->getMockBuilder(StringUtils::class)
+        $this->stringMock = $this->getMockBuilder(\Magento\Framework\Stdlib\StringUtils::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->loggerMock = $this->getMockBuilder(LoggerInterface::class)
+        $this->loggerMock = $this->getMockBuilder(\Psr\Log\LoggerInterface::class)
             ->getMock();
 
-        $this->msApplicationTileImageMock = $this->getMockBuilder(MsApplicationTileImage::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $this->assetsCollection = $this->getMockBuilder(GroupedCollection::class)
+        $this->assetsCollection = $this->getMockBuilder(\Magento\Framework\View\Asset\GroupedCollection::class)
             ->setMethods(['getGroups'])
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->assetInterfaceMock = $this->getMockForAbstractClass(AssetInterface::class);
+        $this->assetInterfaceMock = $this->getMockForAbstractClass(\Magento\Framework\View\Asset\AssetInterface::class);
 
-        $this->titleMock = $this->getMockBuilder(Title::class)
+        $this->titleMock = $this->getMockBuilder(\Magento\Framework\View\Page\Title::class)
             ->setMethods(['set', 'get'])
             ->disableOriginalConstructor()
             ->getMock();
 
         $this->objectManagerHelper = new ObjectManager($this);
         $this->renderer = $this->objectManagerHelper->getObject(
-            Renderer::class,
+            \Magento\Framework\View\Page\Config\Renderer::class,
             [
                 'pageConfig' => $this->pageConfigMock,
                 'assetMergeService' => $this->assetMergeServiceMock,
                 'urlBuilder' => $this->urlBuilderMock,
                 'escaper' => $this->escaperMock,
                 'string' => $this->stringMock,
-                'logger' => $this->loggerMock,
-                'msApplicationTileImage' => $this->msApplicationTileImageMock
+                'logger' => $this->loggerMock
             ]
         );
     }
@@ -172,8 +147,7 @@ class RendererTest extends TestCase
             'content_type' => 'content_type_value',
             'x_ua_compatible' => 'x_ua_compatible_value',
             'media_type' => 'media_type_value',
-            'og:video:secure_url' => 'secure_url',
-            'msapplication-TileImage' => 'https://site.domain/ms-tile.jpg'
+            'og:video:secure_url' => 'secure_url'
         ];
         $metadataValueCharset = 'newCharsetValue';
 
@@ -181,8 +155,7 @@ class RendererTest extends TestCase
             . '<meta name="metadataName" content="metadataValue"/>' . "\n"
             . '<meta http-equiv="Content-Type" content="content_type_value"/>' . "\n"
             . '<meta http-equiv="X-UA-Compatible" content="x_ua_compatible_value"/>' . "\n"
-            . '<meta property="og:video:secure_url" content="secure_url"/>' . "\n"
-            . '<meta name="msapplication-TileImage" content="https://site.domain/ms-tile.jpg"/>' . "\n";
+            . '<meta property="og:video:secure_url" content="secure_url"/>' . "\n";
 
         $this->stringMock->expects($this->at(0))
             ->method('upperCaseWords')
@@ -196,38 +169,7 @@ class RendererTest extends TestCase
         $this->pageConfigMock
             ->expects($this->once())
             ->method('getMetadata')
-            ->willReturn($metadata);
-
-        $this->msApplicationTileImageMock
-            ->expects($this->once())
-            ->method('getUrl')
-            ->with('https://site.domain/ms-tile.jpg')
-            ->willReturn('https://site.domain/ms-tile.jpg');
-
-        $this->assertEquals($expected, $this->renderer->renderMetadata());
-    }
-
-    /**
-     * Test renderMetadata when it has 'msapplication-TileImage' meta passed
-     */
-    public function testRenderMetadataWithMsApplicationTileImageAsset()
-    {
-        $metadata = [
-            'msapplication-TileImage' => 'images/ms-tile.jpg'
-        ];
-        $expectedMetaUrl = 'https://site.domain/images/ms-tile.jpg';
-        $expected = '<meta name="msapplication-TileImage" content="' . $expectedMetaUrl . '"/>' . "\n";
-
-        $this->pageConfigMock
-            ->expects($this->once())
-            ->method('getMetadata')
-            ->willReturn($metadata);
-
-        $this->msApplicationTileImageMock
-            ->expects($this->once())
-            ->method('getUrl')
-            ->with('images/ms-tile.jpg')
-            ->willReturn($expectedMetaUrl);
+            ->will($this->returnValue($metadata));
 
         $this->assertEquals($expected, $this->renderer->renderMetadata());
     }
@@ -264,13 +206,13 @@ class RendererTest extends TestCase
             ->withConsecutive(
                 [
                     $filePath,
-                    Head::VIRTUAL_CONTENT_TYPE_LINK,
+                    Generator\Head::VIRTUAL_CONTENT_TYPE_LINK,
                     ['attributes' => ['rel' => 'icon', 'type' => 'image/x-icon']],
                     'icon',
                 ],
                 [
                     $filePath,
-                    Head::VIRTUAL_CONTENT_TYPE_LINK,
+                    Generator\Head::VIRTUAL_CONTENT_TYPE_LINK,
                     ['attributes' => ['rel' => 'shortcut icon', 'type' => 'image/x-icon']],
                     'shortcut-icon'
                 ]
@@ -317,9 +259,9 @@ class RendererTest extends TestCase
         $assetUrl = 'url';
         $assetNoRoutUrl = 'no_route_url';
 
-        $exception = new LocalizedException(new Phrase('my message'));
+        $exception = new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase('my message'));
 
-        $assetMockOne = $this->getMockForAbstractClass(AssetInterface::class);
+        $assetMockOne = $this->createMock(\Magento\Framework\View\Asset\AssetInterface::class);
         $assetMockOne->expects($this->exactly(2))
             ->method('getUrl')
             ->willReturn($assetUrl);
@@ -327,7 +269,7 @@ class RendererTest extends TestCase
 
         $groupAssetsOne = [$assetMockOne, $assetMockOne];
 
-        $groupMockOne = $this->getMockBuilder(PropertyGroup::class)
+        $groupMockOne = $this->getMockBuilder(\Magento\Framework\View\Asset\PropertyGroup::class)
             ->disableOriginalConstructor()
             ->getMock();
         $groupMockOne->expects($this->once())
@@ -335,16 +277,14 @@ class RendererTest extends TestCase
             ->willReturn($groupAssetsOne);
         $groupMockOne->expects($this->any())
             ->method('getProperty')
-            ->willReturnMap(
-                [
-                    [GroupedCollection::PROPERTY_CAN_MERGE, true],
-                    [GroupedCollection::PROPERTY_CONTENT_TYPE, $groupOne['type']],
-                    ['attributes', $groupOne['attributes']],
-                    ['ie_condition', $groupOne['condition']],
-                ]
-            );
+            ->willReturnMap([
+                [GroupedCollection::PROPERTY_CAN_MERGE, true],
+                [GroupedCollection::PROPERTY_CONTENT_TYPE, $groupOne['type']],
+                ['attributes', $groupOne['attributes']],
+                ['ie_condition', $groupOne['condition']],
+            ]);
 
-        $assetMockTwo = $this->getMockForAbstractClass(AssetInterface::class);
+        $assetMockTwo = $this->createMock(\Magento\Framework\View\Asset\AssetInterface::class);
         $assetMockTwo->expects($this->once())
             ->method('getUrl')
             ->willThrowException($exception);
@@ -352,7 +292,7 @@ class RendererTest extends TestCase
 
         $groupAssetsTwo = [$assetMockTwo];
 
-        $groupMockTwo = $this->getMockBuilder(PropertyGroup::class)
+        $groupMockTwo = $this->getMockBuilder(\Magento\Framework\View\Asset\PropertyGroup::class)
             ->disableOriginalConstructor()
             ->getMock();
         $groupMockTwo->expects($this->once())
@@ -360,14 +300,12 @@ class RendererTest extends TestCase
             ->willReturn($groupAssetsTwo);
         $groupMockTwo->expects($this->any())
             ->method('getProperty')
-            ->willReturnMap(
-                [
-                    [GroupedCollection::PROPERTY_CAN_MERGE, true],
-                    [GroupedCollection::PROPERTY_CONTENT_TYPE, $groupTwo['type']],
-                    ['attributes', $groupTwo['attributes']],
-                    ['ie_condition', $groupTwo['condition']],
-                ]
-            );
+            ->willReturnMap([
+                [GroupedCollection::PROPERTY_CAN_MERGE, true],
+                [GroupedCollection::PROPERTY_CONTENT_TYPE, $groupTwo['type']],
+                ['attributes', $groupTwo['attributes']],
+                ['ie_condition', $groupTwo['condition']],
+            ]);
 
         $this->pageConfigMock->expects($this->once())
             ->method('getAssetCollection')
@@ -440,49 +378,5 @@ class RendererTest extends TestCase
                     . '<link  attr="value" href="url" />' . "\n"
             ],
         ];
-    }
-
-    public function testRenderAssetWithNoContentType() : void
-    {
-        $type = '';
-
-        $assetMockOne = $this->getMockForAbstractClass(AssetInterface::class);
-        $assetMockOne->expects($this->exactly(1))
-            ->method('getUrl')
-            ->willReturn('url');
-
-        $assetMockOne->expects($this->atLeastOnce())->method('getContentType')->willReturn($type);
-
-        $groupAssetsOne = [$assetMockOne];
-
-        $groupMockOne = $this->getMockBuilder(PropertyGroup::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $groupMockOne->expects($this->once())
-            ->method('getAll')
-            ->willReturn($groupAssetsOne);
-        $groupMockOne->expects($this->any())
-            ->method('getProperty')
-            ->willReturnMap(
-                [
-                    [GroupedCollection::PROPERTY_CAN_MERGE, true],
-                    [GroupedCollection::PROPERTY_CONTENT_TYPE, $type],
-                    ['attributes', 'rel="some-rel"'],
-                    ['ie_condition', null],
-                ]
-            );
-
-        $this->pageConfigMock->expects($this->once())
-            ->method('getAssetCollection')
-            ->willReturn($this->assetsCollection);
-
-        $this->assetsCollection->expects($this->once())
-            ->method('getGroups')
-            ->willReturn([$groupMockOne]);
-
-        $this->assertEquals(
-            '<link  rel="some-rel" href="url" />' . "\n",
-            $this->renderer->renderAssets($this->renderer->getAvailableResultGroups())
-        );
     }
 }

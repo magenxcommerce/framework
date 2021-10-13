@@ -41,19 +41,19 @@ class LimitExpression extends Expression
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function __toString()
     {
         $sql = $this->sql;
-        $count = (int)$this->count;
+        $count = intval($this->count);
         if ($count <= 0) {
             /** @see Zend_Db_Adapter_Exception */
             #require_once 'Zend/Db/Adapter/Exception.php';
             throw new \Zend_Db_Adapter_Exception("LIMIT argument count=$count is not valid");
         }
 
-        $offset = (int)$this->offset;
+        $offset = intval($this->offset);
         if ($offset < 0) {
             /** @see Zend_Db_Adapter_Exception */
             #require_once 'Zend/Db/Adapter/Exception.php';

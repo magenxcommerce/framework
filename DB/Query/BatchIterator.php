@@ -88,8 +88,6 @@ class BatchIterator implements BatchIteratorInterface
     }
 
     /**
-     * Returns current select
-     *
      * @return Select
      */
     public function current()
@@ -103,8 +101,6 @@ class BatchIterator implements BatchIteratorInterface
     }
 
     /**
-     * Returns next select
-     *
      * @return Select
      */
     public function next()
@@ -125,8 +121,6 @@ class BatchIterator implements BatchIteratorInterface
     }
 
     /**
-     * Returns key
-     *
      * @return int
      */
     public function key()
@@ -135,8 +129,6 @@ class BatchIterator implements BatchIteratorInterface
     }
 
     /**
-     * Returns is valid
-     *
      * @return bool
      */
     public function valid()
@@ -145,8 +137,6 @@ class BatchIterator implements BatchIteratorInterface
     }
 
     /**
-     * Rewind
-     *
      * @return void
      */
     public function rewind()
@@ -175,7 +165,7 @@ class BatchIterator implements BatchIteratorInterface
         );
         $row = $this->connection->fetchRow($wrapperSelect);
         $this->minValue = $row['max'];
-        return (int)$row['cnt'];
+        return intval($row['cnt']);
     }
 
     /**

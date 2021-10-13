@@ -3,7 +3,6 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
 
 namespace Magento\Framework\Setup\Declaration\Schema\Db\MySQL;
 
@@ -127,7 +126,7 @@ class DbSchemaReader implements DbSchemaReaderInterface
         $indexes = [];
         $adapter = $this->resourceConnection->getConnection($resource);
         $condition = sprintf('`Non_unique` = 1');
-        $sql = sprintf('SHOW INDEXES FROM `%s` WHERE %s', $tableName, $condition);
+        $sql = sprintf('SHOW INDEXES FROM %s WHERE %s', $tableName, $condition);
         $stmt = $adapter->query($sql);
 
         // Use FETCH_NUM so we are not dependent on the CASE attribute of the PDO connection
@@ -148,10 +147,9 @@ class DbSchemaReader implements DbSchemaReaderInterface
     }
 
     /**
-     * Read references (foreign keys) from Magento tables.
-     *
      * As MySQL has bug and do not show foreign keys during DESCRIBE and other directives required
-     * to take it from "SHOW CREATE TABLE ..." command.
+     * to take it from SHOW CREATE TABLE ...
+     * command
      *
      * @inheritdoc
      */
@@ -172,14 +170,13 @@ class DbSchemaReader implements DbSchemaReaderInterface
     public function getCreateTableSql($tableName, $resource)
     {
         $adapter = $this->resourceConnection->getConnection($resource);
-        $sql = sprintf('SHOW CREATE TABLE `%s`', $tableName);
+        $sql = sprintf('SHOW CREATE TABLE %s', $tableName);
         $stmt = $adapter->query($sql);
         return $stmt->fetch(\Zend_Db::FETCH_ASSOC);
     }
 
     /**
      * Reading DB constraints.
-     *
      * Primary and unique constraints are always non_unique=0.
      *
      * @inheritdoc
@@ -189,7 +186,7 @@ class DbSchemaReader implements DbSchemaReaderInterface
         $constraints = [];
         $adapter = $this->resourceConnection->getConnection($resource);
         $condition = sprintf('`Non_unique` = 0');
-        $sql = sprintf('SHOW INDEXES FROM `%s` WHERE %s', $tableName, $condition);
+        $sql = sprintf('SHOW INDEXES FROM %s WHERE %s', $tableName, $condition);
         $stmt = $adapter->query($sql);
 
         // Use FETCH_NUM so we are not dependent on the CASE attribute of the PDO connection

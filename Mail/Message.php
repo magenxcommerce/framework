@@ -5,28 +5,22 @@
  */
 namespace Magento\Framework\Mail;
 
-use Laminas\Mime\Mime;
-use Laminas\Mime\Part;
+use Zend\Mime\Mime;
+use Zend\Mime\Part;
 
-/**
- * Class Message for email transportation
- *
- * @deprecated 102.0.4 a new message implementation was added
- * @see \Magento\Framework\Mail\EmailMessage
- */
 class Message implements MailMessageInterface
 {
     /**
-     * @var \Laminas\Mail\Message
+     * @var \Zend\Mail\Message
      */
-    protected $zendMessage;
+    private $zendMessage;
 
     /**
      * Message type
      *
      * @var string
      */
-    private $messageType = Mime::TYPE_TEXT;
+    private $messageType = self::TYPE_TEXT;
 
     /**
      * Initialize dependencies.
@@ -35,14 +29,14 @@ class Message implements MailMessageInterface
      */
     public function __construct($charset = 'utf-8')
     {
-        $this->zendMessage = new \Laminas\Mail\Message();
+        $this->zendMessage = new \Zend\Mail\Message();
         $this->zendMessage->setEncoding($charset);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      *
-     * @deprecated 101.0.8
+     * @deprecated
      * @see \Magento\Framework\Mail\Message::setBodyText
      * @see \Magento\Framework\Mail\Message::setBodyHtml
      */
@@ -53,23 +47,23 @@ class Message implements MailMessageInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      *
-     * @deprecated 101.0.8
+     * @deprecated
      * @see \Magento\Framework\Mail\Message::setBodyText
      * @see \Magento\Framework\Mail\Message::setBodyHtml
      */
     public function setBody($body)
     {
-        if (is_string($body)) {
-            $body = self::createMimeFromString($body, $this->messageType);
+        if (is_string($body) && $this->messageType === MailMessageInterface::TYPE_HTML) {
+            $body = self::createHtmlMimeFromString($body);
         }
         $this->zendMessage->setBody($body);
         return $this;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function setSubject($subject)
     {
@@ -78,7 +72,7 @@ class Message implements MailMessageInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getSubject()
     {
@@ -86,7 +80,7 @@ class Message implements MailMessageInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getBody()
     {
@@ -94,29 +88,16 @@ class Message implements MailMessageInterface
     }
 
     /**
-     * @inheritdoc
-     *
-     * @deprecated 102.0.1 This function is missing the from name. The
-     * setFromAddress() function sets both from address and from name.
-     * @see setFromAddress()
+     * {@inheritdoc}
      */
     public function setFrom($fromAddress)
     {
-        $this->setFromAddress($fromAddress, null);
+        $this->zendMessage->setFrom($fromAddress);
         return $this;
     }
 
     /**
-     * @inheritdoc
-     */
-    public function setFromAddress($fromAddress, $fromName = null)
-    {
-        $this->zendMessage->setFrom($fromAddress, $fromName);
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function addTo($toAddress)
     {
@@ -125,7 +106,7 @@ class Message implements MailMessageInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function addCc($ccAddress)
     {
@@ -134,7 +115,7 @@ class Message implements MailMessageInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function addBcc($bccAddress)
     {
@@ -143,7 +124,7 @@ class Message implements MailMessageInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function setReplyTo($replyToAddress)
     {
@@ -152,7 +133,7 @@ class Message implements MailMessageInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getRawMessage()
     {
@@ -160,38 +141,36 @@ class Message implements MailMessageInterface
     }
 
     /**
-     * Create mime message from the string.
+     * Create HTML mime message from the string.
      *
-     * @param string $body
-     * @param string $messageType
-     * @return \Laminas\Mime\Message
+     * @param string $htmlBody
+     * @return \Zend\Mime\Message
      */
-    private function createMimeFromString($body, $messageType)
+    private function createHtmlMimeFromString($htmlBody)
     {
-        $part = new Part($body);
-        $part->setCharset($this->zendMessage->getEncoding());
-        $part->setEncoding(Mime::ENCODING_QUOTEDPRINTABLE);
-        $part->setType($messageType);
-        $mimeMessage = new \Laminas\Mime\Message();
-        $mimeMessage->addPart($part);
+        $htmlPart = new Part($htmlBody);
+        $htmlPart->setCharset($this->zendMessage->getEncoding());
+        $htmlPart->setType(Mime::TYPE_HTML);
+        $mimeMessage = new \Zend\Mime\Message();
+        $mimeMessage->addPart($htmlPart);
         return $mimeMessage;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function setBodyHtml($html)
     {
-        $this->setMessageType(Mime::TYPE_HTML);
+        $this->setMessageType(self::TYPE_HTML);
         return $this->setBody($html);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function setBodyText($text)
     {
-        $this->setMessageType(Mime::TYPE_TEXT);
+        $this->setMessageType(self::TYPE_TEXT);
         return $this->setBody($text);
     }
 }

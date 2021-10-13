@@ -7,7 +7,6 @@ namespace Magento\Framework\Search\Adapter\Mysql;
 
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Ddl\Table;
-use Magento\Framework\DB\Select;
 use Magento\Framework\Search\Adapter\Mysql\Aggregation\Builder as AggregationBuilder;
 use Magento\Framework\Search\AdapterInterface;
 use Magento\Framework\Search\RequestInterface;
@@ -15,7 +14,7 @@ use Magento\Framework\Search\RequestInterface;
 /**
  * MySQL Search Adapter
  *
- * @deprecated 102.0.0
+ * @deprecated
  * @see \Magento\ElasticSearch
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
@@ -49,16 +48,6 @@ class Adapter implements AdapterInterface
      * @var TemporaryStorageFactory
      */
     private $temporaryStorageFactory;
-
-    /**
-     * Query Select Parts to be skipped when prepare query for count
-     *
-     * @var array
-     */
-    private $countSqlSkipParts = [
-        \Magento\Framework\DB\Select::LIMIT_COUNT => true,
-        \Magento\Framework\DB\Select::LIMIT_OFFSET => true,
-    ];
 
     /**
      * @param Mapper $mapper
@@ -97,7 +86,6 @@ class Adapter implements AdapterInterface
         $response = [
             'documents' => $documents,
             'aggregations' => $aggregations,
-            'total' => $this->getSize($query)
         ];
         return $this->responseFactory->create($response);
     }
@@ -125,40 +113,5 @@ class Adapter implements AdapterInterface
     private function getConnection()
     {
         return $this->resource->getConnection();
-    }
-
-    /**
-     * Get rows size
-     *
-     * @param Select $query
-     * @return int
-     */
-    private function getSize(Select $query): int
-    {
-        $sql = $this->getSelectCountSql($query);
-        $parentSelect = $this->getConnection()->select();
-        $parentSelect->from(['core_select' => $sql]);
-        $parentSelect->reset(\Magento\Framework\DB\Select::COLUMNS);
-        $parentSelect->columns('COUNT(*)');
-        $totalRecords = $this->getConnection()->fetchOne($parentSelect);
-
-        return intval($totalRecords);
-    }
-
-    /**
-     * Reset limit and offset
-     *
-     * @param Select $query
-     * @return Select
-     */
-    private function getSelectCountSql(Select $query): Select
-    {
-        foreach ($this->countSqlSkipParts as $part => $toSkip) {
-            if ($toSkip) {
-                $query->reset($part);
-            }
-        }
-
-        return $query;
     }
 }

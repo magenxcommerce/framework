@@ -5,18 +5,14 @@
  */
 namespace Magento\Framework\Data\Form\Element;
 
-use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Data\Form;
 use Magento\Framework\Data\Form\AbstractForm;
 use Magento\Framework\Data\Form\Element\Renderer\RendererInterface;
 use Magento\Framework\Escaper;
-use Magento\Framework\Math\Random;
-use Magento\Framework\View\Helper\SecureHtmlRenderer;
 
 /**
  * Data form abstract class
  *
- * phpcs:disable Magento2.Classes.AbstractApi
  * @api
  * @author     Magento Core Team <core@magentocommerce.com>
  * @SuppressWarnings(PHPMD.NumberOfChildren)
@@ -69,50 +65,20 @@ abstract class AbstractElement extends AbstractForm
     private $lockHtmlAttribute = 'data-locked';
 
     /**
-     * @var SecureHtmlRenderer
-     */
-    private $secureRenderer;
-
-    /**
-     * @var Random
-     */
-    private $random;
-
-    /**
      * @param Factory $factoryElement
      * @param CollectionFactory $factoryCollection
      * @param Escaper $escaper
      * @param array $data
-     * @param SecureHtmlRenderer|null $secureRenderer
-     * @param Random|null $random
      */
     public function __construct(
         Factory $factoryElement,
         CollectionFactory $factoryCollection,
         Escaper $escaper,
-        $data = [],
-        ?SecureHtmlRenderer $secureRenderer = null,
-        ?Random $random = null
+        $data = []
     ) {
         $this->_escaper = $escaper;
         parent::__construct($factoryElement, $factoryCollection, $data);
         $this->_renderer = \Magento\Framework\Data\Form::getElementRenderer();
-        $this->secureRenderer = $secureRenderer ?? ObjectManager::getInstance()->get(SecureHtmlRenderer::class);
-        $this->random = $random ?? ObjectManager::getInstance()->get(Random::class);
-    }
-
-    /**
-     * Generate this element's ID.
-     *
-     * @return string
-     */
-    private function generateElementId(): string
-    {
-        if (!$this->hasData('formelementhookid')) {
-            $this->setData('formelementhookid', 'elemId' .$this->random->getRandomString(10));
-        }
-
-        return $this->getData('formelementhookid');
     }
 
     /**
@@ -205,11 +171,7 @@ abstract class AbstractElement extends AbstractForm
      */
     public function getHtmlId()
     {
-        return $this->_escaper->escapeHtml(
-            $this->getForm()->getHtmlIdPrefix() .
-            $this->getData('html_id') .
-            $this->getForm()->getHtmlIdSuffix()
-        );
+        return $this->getForm()->getHtmlIdPrefix() . $this->getData('html_id') . $this->getForm()->getHtmlIdSuffix();
     }
 
     /**
@@ -219,7 +181,7 @@ abstract class AbstractElement extends AbstractForm
      */
     public function getName()
     {
-        $name = $this->_escaper->escapeHtml($this->getData('name'));
+        $name = $this->getData('name');
         if ($suffix = $this->getForm()->getFieldNameSuffix()) {
             $name = $this->getForm()->addSuffixToName($name, $suffix);
         }
@@ -240,8 +202,6 @@ abstract class AbstractElement extends AbstractForm
     }
 
     /**
-     * Set form.
-     *
      * @param AbstractForm $form
      * @return $this
      */
@@ -279,7 +239,6 @@ abstract class AbstractElement extends AbstractForm
             'onchange',
             'disabled',
             'readonly',
-            'autocomplete',
             'tabindex',
             'placeholder',
             'data-form-part',
@@ -326,7 +285,7 @@ abstract class AbstractElement extends AbstractForm
      */
     protected function _escape($string)
     {
-        return $this->_escaper->escapeHtml($string);
+        return htmlspecialchars($string, ENT_COMPAT);
     }
 
     /**
@@ -368,8 +327,6 @@ abstract class AbstractElement extends AbstractForm
     }
 
     /**
-     * Get Ui Id.
-     *
      * @param null|string $suffix
      * @return string
      */
@@ -378,7 +335,7 @@ abstract class AbstractElement extends AbstractForm
         if ($this->_renderer instanceof \Magento\Framework\View\Element\AbstractBlock) {
             return $this->_renderer->getUiId($this->getType(), $this->getName(), $suffix);
         } else {
-            return ' data-ui-id="form-element-' . $this->_escaper->escapeHtml($this->getName()) . ($suffix ?: '') . '"';
+            return ' data-ui-id="form-element-' . $this->getName() . ($suffix ?: '') . '"';
         }
     }
 
@@ -429,53 +386,13 @@ abstract class AbstractElement extends AbstractForm
     }
 
     /**
-     * Generate HTML to replace unsecure attributes.
-     *
-     * @return string
-     */
-    private function generateAttributesSubstitute(): string
-    {
-        $html = '';
-
-        //Rendering element's style as separate tag.
-        if ($this->getStyle()) {
-            $selector = "*[formelementhookid='{$this->generateElementId()}']";
-            if ($id = $this->getHtmlId()) {
-                $selector = "#{$id}";
-            }
-            $html .= $this->secureRenderer->renderStyleAsTag($this->getStyle(), $selector);
-        }
-
-        //Rendering each event listener as a separate script tag.
-        $events = array_filter(
-            $this->getHtmlAttributes(),
-            function (string $attribute): bool {
-                return mb_strpos($attribute, 'on') === 0;
-            }
-        );
-        foreach ($events as $event) {
-            $eventShort = mb_substr($event, 2);
-            $methodName = 'getOn' .$eventShort;
-            if ($eventListener = $this->$methodName()) {
-                $html .= $this->secureRenderer->renderEventListenerAsTag(
-                    $event,
-                    $eventListener,
-                    "*[formelementhookid='{$this->generateElementId()}']"
-                );
-            }
-        }
-
-        return $html;
-    }
-
-    /**
      * Get the after element html.
      *
      * @return mixed
      */
     public function getAfterElementHtml()
     {
-        return $this->getData('after_element_html') .$this->generateAttributesSubstitute();
+        return $this->getData('after_element_html');
     }
 
     /**
@@ -581,16 +498,6 @@ abstract class AbstractElement extends AbstractForm
         } else {
             unset($this->_data['checked']);
         }
-        $attributes[] = 'formelementhookid';
-        $this->generateElementId();
-        //Unset attributes that are to be rendered as separate tags
-        $attributes = array_filter(
-            $attributes,
-            function (string $attribute): bool {
-                return $attribute !== 'style' && mb_strpos($attribute, 'on') !== 0;
-            }
-        );
-
         return parent::serialize($attributes, $valueSeparator, $fieldSeparator, $quote);
     }
 

@@ -3,12 +3,10 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
-
 namespace Magento\Framework\App\Console;
 
 /**
- * HTTP response implementation.
+ * @SuppressWarnings(PHPMD.ExitExpression)
  */
 class Response implements \Magento\Framework\App\ResponseInterface
 {
@@ -55,11 +53,9 @@ class Response implements \Magento\Framework\App\ResponseInterface
     public function sendResponse()
     {
         if (!empty($this->body)) {
-            // phpcs:ignore Magento2.Security.LanguageConstruct.DirectOutput
             echo $this->body;
         }
         if ($this->terminateOnSend) {
-            // phpcs:ignore Magento2.Security.LanguageConstruct.ExitUsage
             exit($this->code);
         }
         return $this->code;

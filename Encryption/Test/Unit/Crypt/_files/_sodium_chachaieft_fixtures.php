@@ -32,14 +32,4 @@ return [
         'encrypted' => 'UglO9dEgslFpwPwejJmrK89PmBicv+I1pfdaXaEI69IrETD8LpdzOLF7',
         'decrypted' => 'Hello World!!!',
     ],
-    5 => [
-        'key' => '6wRADHwwCBGgdxbcHhovGB0upmg0mbsN',
-        'encrypted' => '',
-        'decrypted' => '',
-    ],
-    6 => [
-        'key' => '6wRADHwwCBGgdxbcHhovGB0upmg0mbsN',
-        'encrypted' => 'bWFsZm9ybWVkLWlucHV0',
-        'decrypted' => '',
-    ],
 ];

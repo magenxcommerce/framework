@@ -3,21 +3,11 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
-
 namespace Magento\Framework\Config\Test\Unit\Dom;
 
-use Magento\Framework\Config\Dom\NodeMergingConfig;
-use Magento\Framework\Config\Dom\NodePathMatcher;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
+use \Magento\Framework\Config\Dom\NodeMergingConfig;
 
-/**
- * Test for
- *
- * @see NodeMergingConfig
- */
-class NodeMergingConfigTest extends TestCase
+class NodeMergingConfigTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var NodeMergingConfig
@@ -25,13 +15,13 @@ class NodeMergingConfigTest extends TestCase
     protected $object;
 
     /**
-     * @var NodePathMatcher|MockObject
+     * @var NodePathMatcher|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $nodePathMatcher;
 
-    protected function setUp(): void
+    protected function setUp()
     {
-        $this->nodePathMatcher = $this->createMock(NodePathMatcher::class);
+        $this->nodePathMatcher = $this->createMock(\Magento\Framework\Config\Dom\NodePathMatcher::class);
         $this->object = new NodeMergingConfig(
             $this->nodePathMatcher,
             ['/root/one' => 'name', '/root/two' => 'id', '/root/three' => 'key']
@@ -48,8 +38,8 @@ class NodeMergingConfigTest extends TestCase
         )->with(
             '/root/one',
             $xpath
-        )->willReturn(
-            false
+        )->will(
+            $this->returnValue(false)
         );
         $this->nodePathMatcher->expects(
             $this->at(1)
@@ -58,8 +48,8 @@ class NodeMergingConfigTest extends TestCase
         )->with(
             '/root/two',
             $xpath
-        )->willReturn(
-            true
+        )->will(
+            $this->returnValue(true)
         );
         $this->assertEquals('id', $this->object->getIdAttribute($xpath));
     }
@@ -74,8 +64,8 @@ class NodeMergingConfigTest extends TestCase
         )->with(
             '/root/one',
             $xpath
-        )->willReturn(
-            false
+        )->will(
+            $this->returnValue(false)
         );
         $this->nodePathMatcher->expects(
             $this->at(1)
@@ -84,8 +74,8 @@ class NodeMergingConfigTest extends TestCase
         )->with(
             '/root/two',
             $xpath
-        )->willReturn(
-            false
+        )->will(
+            $this->returnValue(false)
         );
         $this->nodePathMatcher->expects(
             $this->at(2)
@@ -94,8 +84,8 @@ class NodeMergingConfigTest extends TestCase
         )->with(
             '/root/three',
             $xpath
-        )->willReturn(
-            false
+        )->will(
+            $this->returnValue(false)
         );
         $this->assertNull($this->object->getIdAttribute($xpath));
     }

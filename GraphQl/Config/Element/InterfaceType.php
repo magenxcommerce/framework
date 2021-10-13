@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace Magento\Framework\GraphQl\Config\Element;
 
 /**
- * Class representing 'interface' GraphQL config element.
+ * Describes the configured data for a GraphQL interface type.
  */
 class InterfaceType implements TypeInterface
 {
@@ -42,7 +42,7 @@ class InterfaceType implements TypeInterface
         string $name,
         string $typeResolver,
         array $fields,
-        string $description
+        string $description = ""
     ) {
         $this->name = $name;
         $this->fields = $fields;

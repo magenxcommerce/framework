@@ -3,86 +3,50 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
 
 /**
  * Test for view Messages model
  */
 namespace Magento\Framework\View\Test\Unit\Element\UiComponent;
 
-use Magento\Framework\App\Request\Http;
-use Magento\Framework\AuthorizationInterface;
-use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
-use Magento\Framework\UrlInterface;
-use Magento\Framework\View\Element\UiComponent\ContentType\ContentTypeFactory;
 use Magento\Framework\View\Element\UiComponent\Context;
-use Magento\Framework\View\Element\UiComponent\Control\ActionPoolFactory;
-use Magento\Framework\View\Element\UiComponent\Control\ActionPoolInterface;
-use Magento\Framework\View\Element\UiComponent\Control\ButtonProviderFactory;
-use Magento\Framework\View\Element\UiComponent\Processor;
-use Magento\Framework\View\Element\UiComponentFactory;
-use Magento\Framework\View\Element\UiComponentInterface;
-use Magento\Framework\View\LayoutInterface;
-use PHPUnit\Framework\TestCase;
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 
-/**
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- */
-class ContextTest extends TestCase
+class ContextTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var Context
      */
     protected $context;
 
-    /**
-     * @var ActionPoolInterface
-     */
-    private $actionPool;
-
-    /**
-     * @var AuthorizationInterface
-     */
-    private $authorization;
-
-    protected function setUp(): void
+    protected function setUp()
     {
-        $pageLayout = $this->getMockBuilder(LayoutInterface::class)
-            ->getMock();
-        $request = $this->getMockBuilder(Http::class)
+        $pageLayout = $this->getMockBuilder(\Magento\Framework\View\LayoutInterface::class)->getMock();
+        $request = $this->getMockBuilder(\Magento\Framework\App\Request\Http::class)
             ->disableOriginalConstructor()
             ->getMock();
         $buttonProviderFactory =
-            $this->getMockBuilder(ButtonProviderFactory::class)
+            $this->getMockBuilder(\Magento\Framework\View\Element\UiComponent\Control\ButtonProviderFactory::class)
                 ->disableOriginalConstructor()
                 ->getMock();
         $actionPoolFactory =
-            $this->getMockBuilder(ActionPoolFactory::class)
+            $this->getMockBuilder(\Magento\Framework\View\Element\UiComponent\Control\ActionPoolFactory::class)
                 ->disableOriginalConstructor()
                 ->getMock();
-        $this->actionPool = $this->getMockBuilder(ActionPoolInterface::class)
-            ->disableOriginalConstructor()
-            ->getMockForAbstractClass();
-        $actionPoolFactory->method('create')->willReturn($this->actionPool);
         $contentTypeFactory =
-            $this->getMockBuilder(ContentTypeFactory::class)
+            $this->getMockBuilder(\Magento\Framework\View\Element\UiComponent\ContentType\ContentTypeFactory::class)
                 ->disableOriginalConstructor()
                 ->getMock();
-        $urlBuilder = $this->getMockBuilder(UrlInterface::class)
-            ->getMock();
-        $processor = $this->getMockBuilder(Processor::class)
-            ->getMock();
+        $urlBuilder = $this->getMockBuilder(\Magento\Framework\UrlInterface::class)->getMock();
+        $processor = $this->getMockBuilder(\Magento\Framework\View\Element\UiComponent\Processor::class)->getMock();
         $uiComponentFactory =
-            $this->getMockBuilder(UiComponentFactory::class)
+            $this->getMockBuilder(\Magento\Framework\View\Element\UiComponentFactory::class)
                 ->disableOriginalConstructor()
                 ->getMock();
-        $this->authorization = $this->getMockBuilder(AuthorizationInterface::class)
-            ->disableOriginalConstructor()
-            ->getMockForAbstractClass();
 
         $objectManagerHelper = new ObjectManagerHelper($this);
         $this->context = $objectManagerHelper->getObject(
-            Context::class,
+            \Magento\Framework\View\Element\UiComponent\Context::class,
             [
                 'pageLayout'            => $pageLayout,
                 'request'               => $request,
@@ -91,60 +55,9 @@ class ContextTest extends TestCase
                 'contentTypeFactory'    => $contentTypeFactory,
                 'urlBuilder'            => $urlBuilder,
                 'processor'             => $processor,
-                'uiComponentFactory'    => $uiComponentFactory,
-                'authorization'         => $this->authorization,
+                'uiComponentFactory'    => $uiComponentFactory
             ]
         );
-    }
-
-    public function testAddButtonWithoutAclResource()
-    {
-        $component = $this->getMockBuilder(UiComponentInterface::class)
-            ->disableOriginalConstructor()
-            ->getMockForAbstractClass();
-
-        $this->actionPool->expects($this->once())->method('add');
-        $this->authorization->expects($this->never())->method('isAllowed');
-
-        $this->context->addButtons([
-            'button_1' => [
-                'name' => 'button_1',
-            ],
-        ], $component);
-    }
-
-    public function testAddButtonWithAclResourceAllowed()
-    {
-        $component = $this->getMockBuilder(UiComponentInterface::class)
-            ->disableOriginalConstructor()
-            ->getMockForAbstractClass();
-
-        $this->actionPool->expects($this->once())->method('add');
-        $this->authorization->expects($this->once())->method('isAllowed')->willReturn(true);
-
-        $this->context->addButtons([
-            'button_1' => [
-                'name' => 'button_1',
-                'aclResource' => 'Magento_Framwork::acl',
-            ],
-        ], $component);
-    }
-
-    public function testAddButtonWithAclResourceDenied()
-    {
-        $component = $this->getMockBuilder(UiComponentInterface::class)
-            ->disableOriginalConstructor()
-            ->getMockForAbstractClass();
-
-        $this->actionPool->expects($this->never())->method('add');
-        $this->authorization->expects($this->once())->method('isAllowed')->willReturn(false);
-
-        $this->context->addButtons([
-            'button_1' => [
-                'name' => 'button_1',
-                'aclResource' => 'Magento_Framwork::acl',
-            ],
-        ], $component);
     }
 
     /**

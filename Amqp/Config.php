@@ -16,7 +16,7 @@ use Magento\Framework\Amqp\Connection\Factory as ConnectionFactory;
  * Reads the Amqp config in the deployed environment configuration
  *
  * @api
- * @since 103.0.0
+ * @since 100.0.0
  */
 class Config
 {
@@ -96,6 +96,7 @@ class Config
      * @param DeploymentConfig $config
      * @param string $connectionName
      * @param ConnectionFactory|null $connectionFactory
+     * @since 100.0.0
      */
     public function __construct(
         DeploymentConfig $config,
@@ -112,7 +113,7 @@ class Config
      * Destructor
      *
      * @return void
-     * @since 103.0.0
+     * @since 100.0.0
      */
     public function __destruct()
     {
@@ -125,17 +126,15 @@ class Config
      * @param string $key
      * @return string
      * @throws \LogicException
-     * @since 103.0.0
+     * @since 100.0.0
      */
     public function getValue($key)
     {
         $this->load();
-        return $this->data[$key] ?? null;
+        return isset($this->data[$key]) ? $this->data[$key] : null;
     }
 
     /**
-     * Create amqp connection
-     *
      * @return AbstractConnection
      */
     private function createConnection(): AbstractConnection
@@ -161,7 +160,7 @@ class Config
      *
      * @return AMQPChannel
      * @throws \LogicException
-     * @since 103.0.0
+     * @since 100.0.0
      */
     public function getChannel()
     {

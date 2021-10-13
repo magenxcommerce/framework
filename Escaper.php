@@ -15,11 +15,6 @@ namespace Magento\Framework;
 class Escaper
 {
     /**
-     * HTML special characters flag
-     */
-    private $htmlSpecialCharsFlag = ENT_QUOTES | ENT_SUBSTITUTE;
-
-    /**
      * @var \Magento\Framework\ZendEscaper
      */
     private $escaper;
@@ -30,11 +25,6 @@ class Escaper
     private $logger;
 
     /**
-     * @var \Magento\Framework\Translate\InlineInterface
-     */
-    private $translateInline;
-
-    /**
      * @var string[]
      */
     private $notAllowedTags = ['script', 'img', 'embed', 'iframe', 'video', 'source', 'object', 'audio'];
@@ -42,12 +32,7 @@ class Escaper
     /**
      * @var string[]
      */
-    private $allowedAttributes = ['id', 'class', 'href', 'title', 'style'];
-
-    /**
-     * @var array
-     */
-    private $notAllowedAttributes = ['a' => ['style']];
+    private $allowedAttributes = ['id', 'class', 'href', 'target', 'title', 'style'];
 
     /**
      * @var string
@@ -83,18 +68,16 @@ class Escaper
             foreach ($data as $item) {
                 $result[] = $this->escapeHtml($item, $allowedTags);
             }
-        } elseif (!empty($data)) {
+        } elseif (strlen($data)) {
             if (is_array($allowedTags) && !empty($allowedTags)) {
                 $allowedTags = $this->filterProhibitedTags($allowedTags);
                 $wrapperElementId = uniqid();
                 $domDocument = new \DOMDocument('1.0', 'UTF-8');
                 set_error_handler(
                     function ($errorNumber, $errorString) {
-                        // phpcs:ignore Magento2.Exceptions.DirectThrow
-                        throw new \InvalidArgumentException($errorString, $errorNumber);
+                        throw new \Exception($errorString, $errorNumber);
                     }
                 );
-                $data = $this->prepareUnescapedCharacters($data);
                 $string = mb_convert_encoding($data, 'HTML-ENTITIES', 'UTF-8');
                 try {
                     $domDocument->loadHTML(
@@ -106,7 +89,6 @@ class Escaper
                 }
                 restore_error_handler();
 
-                $this->removeComments($domDocument);
                 $this->removeNotAllowedTags($domDocument, $allowedTags);
                 $this->removeNotAllowedAttributes($domDocument);
                 $this->escapeText($domDocument);
@@ -116,25 +98,12 @@ class Escaper
                 preg_match('/<body id="' . $wrapperElementId . '">(.+)<\/body><\/html>$/si', $result, $matches);
                 return !empty($matches) ? $matches[1] : '';
             } else {
-                $result = htmlspecialchars($data, $this->htmlSpecialCharsFlag, 'UTF-8', false);
+                $result = htmlspecialchars($data, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', false);
             }
         } else {
             $result = $data;
         }
         return $result;
-    }
-
-    /**
-     * Used to replace characters, that mb_convert_encoding will not process
-     *
-     * @param string $data
-     * @return string|null
-     */
-    private function prepareUnescapedCharacters(string $data): ?string
-    {
-        $patterns = ['/\&/u'];
-        $replacements = ['&amp;'];
-        return \preg_replace($patterns, $replacements, $data);
     }
 
     /**
@@ -153,7 +122,7 @@ class Escaper
             . '\']'
         );
         foreach ($nodes as $node) {
-            if ($node->nodeName != '#text') {
+            if ($node->nodeName != '#text' && $node->nodeName != '#comment') {
                 $node->parentNode->replaceChild($domDocument->createTextNode($node->textContent), $node);
             }
         }
@@ -173,31 +142,6 @@ class Escaper
         );
         foreach ($nodes as $node) {
             $node->parentNode->removeAttribute($node->nodeName);
-        }
-
-        foreach ($this->notAllowedAttributes as $tag => $attributes) {
-            $nodes = $xpath->query(
-                '//@*[name() =\'' . implode('\' or name() = \'', $attributes) . '\']'
-                . '[parent::node()[name() = \'' . $tag . '\']]'
-            );
-            foreach ($nodes as $node) {
-                $node->parentNode->removeAttribute($node->nodeName);
-            }
-        }
-    }
-
-    /**
-     * Remove comments
-     *
-     * @param \DOMDocument $domDocument
-     * @return void
-     */
-    private function removeComments(\DOMDocument $domDocument)
-    {
-        $xpath = new \DOMXPath($domDocument);
-        $nodes = $xpath->query('//comment()');
-        foreach ($nodes as $node) {
-            $node->parentNode->removeChild($node);
         }
     }
 
@@ -260,7 +204,7 @@ class Escaper
         if ($escapeSingleQuote) {
             return $this->getEscaper()->escapeHtmlAttr((string) $string);
         }
-        return htmlspecialchars((string)$string, $this->htmlSpecialCharsFlag, 'UTF-8', false);
+        return htmlspecialchars((string)$string, ENT_COMPAT, 'UTF-8', false);
     }
 
     /**
@@ -326,9 +270,9 @@ class Escaper
     }
 
     /**
-     * Escape single quotes/apostrophes ('), or other specified $quote character in javascript
+     * Escape quotes in java script
      *
-     * @param string|string[]|array $data
+     * @param string|array $data
      * @param string $quote
      * @return string|array
      * @deprecated 101.0.0
@@ -355,12 +299,9 @@ class Escaper
      */
     public function escapeXssInUrl($data)
     {
-        $data = html_entity_decode((string)$data);
-        $this->getTranslateInline()->processResponseBody($data);
-
         return htmlspecialchars(
-            $this->escapeScriptIdentifiers($data),
-            $this->htmlSpecialCharsFlag | ENT_HTML5 | ENT_HTML401,
+            $this->escapeScriptIdentifiers((string)$data),
+            ENT_COMPAT | ENT_HTML5 | ENT_HTML401,
             'UTF-8',
             false
         );
@@ -374,16 +315,7 @@ class Escaper
      */
     private function escapeScriptIdentifiers(string $data): string
     {
-        $filteredData = preg_replace('/[\x00-\x1F\x7F\xA0]/u', '', $data);
-        if ($filteredData === false || $filteredData === '') {
-            return '';
-        }
-
-        $filteredData = preg_replace(self::$xssFiltrationPattern, ':', $filteredData);
-        if ($filteredData === false) {
-            return '';
-        }
-
+        $filteredData = preg_replace(self::$xssFiltrationPattern, ':', $data) ?: '';
         if (preg_match(self::$xssFiltrationPattern, $filteredData)) {
             $filteredData = $this->escapeScriptIdentifiers($filteredData);
         }
@@ -406,7 +338,7 @@ class Escaper
         if ($addSlashes === true) {
             $data = addslashes($data);
         }
-        return htmlspecialchars($data, $this->htmlSpecialCharsFlag, null, false);
+        return htmlspecialchars($data, ENT_QUOTES, null, false);
     }
 
     /**
@@ -460,20 +392,5 @@ class Escaper
         }
 
         return $allowedTags;
-    }
-
-    /**
-     * Resolve inline translator.
-     *
-     * @return \Magento\Framework\Translate\InlineInterface
-     */
-    private function getTranslateInline()
-    {
-        if ($this->translateInline === null) {
-            $this->translateInline = \Magento\Framework\App\ObjectManager::getInstance()
-                ->get(\Magento\Framework\Translate\InlineInterface::class);
-        }
-
-        return $this->translateInline;
     }
 }

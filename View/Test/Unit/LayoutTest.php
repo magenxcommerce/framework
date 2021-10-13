@@ -3,193 +3,166 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
-
 namespace Magento\Framework\View\Test\Unit;
 
-use Magento\Framework\App\State;
-use Magento\Framework\Cache\FrontendInterface;
-use Magento\Framework\DataObject;
-use Magento\Framework\Event\ManagerInterface as EventManager;
-use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Serialize\SerializerInterface;
-use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
-use Magento\Framework\View\Design\Theme\ResolverInterface;
-use Magento\Framework\View\Design\ThemeInterface;
-use Magento\Framework\View\Element\AbstractBlock;
-use Magento\Framework\View\Element\Template;
-use Magento\Framework\View\Layout;
-use Magento\Framework\View\Layout\Data\Structure as LayoutStructure;
-use Magento\Framework\View\Layout\Element;
-use Magento\Framework\View\Layout\Generator\Block;
-use Magento\Framework\View\Layout\Generator\Container;
-use Magento\Framework\View\Layout\Generator\Context;
-use Magento\Framework\View\Layout\Generator\ContextFactory;
-use Magento\Framework\View\Layout\GeneratorPool;
-use Magento\Framework\View\Layout\ProcessorFactory;
-use Magento\Framework\View\Layout\Reader\Context as LayoutReaderContext;
-use Magento\Framework\View\Layout\Reader\ContextFactory as LayoutReaderContextFactory;
-use Magento\Framework\View\Layout\ReaderPool;
-use Magento\Framework\View\Layout\ScheduledStructure;
-use Magento\Framework\View\Model\Layout\Merge;
-use Magento\Framework\View\Page\Config\Structure;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
 
 /**
- * Unit tests for \Magento\Framework\View\Layout class.
- *
  * @SuppressWarnings(PHPMD.TooManyFields)
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class LayoutTest extends TestCase
+class LayoutTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @var Layout
+     * @var \Magento\Framework\View\Layout
      */
-    private $model;
+    protected $model;
 
     /**
-     * @var LayoutStructure|MockObject
+     * @var \PHPUnit_Framework_MockObject_MockObject
      */
-    private $structureMock;
+    protected $structureMock;
 
     /**
-     * @var ProcessorFactory|MockObject
+     * @var \Magento\Framework\View\Layout\ProcessorFactory|\PHPUnit_Framework_MockObject_MockObject
      */
-    private $processorFactoryMock;
+    protected $processorFactoryMock;
 
     /**
-     * @var ResolverInterface|MockObject
+     * @var \Magento\Framework\View\Design\Theme\ResolverInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    private $themeResolverMock;
+    protected $themeResolverMock;
 
     /**
-     * @var Merge|MockObject
+     * @var \Magento\Framework\View\Model\Layout\Merge|\PHPUnit_Framework_MockObject_MockObject
      */
-    private $processorMock;
+    protected $processorMock;
 
     /**
-     * @var EventManager|MockObject
+     * @var \Magento\Framework\Event\ManagerInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    private $eventManagerMock;
+    protected $eventManagerMock;
 
     /**
-     * @var Block|MockObject
+     * @var \Magento\Framework\View\Layout\Generator\Block|\PHPUnit_Framework_MockObject_MockObject
      */
-    private $generatorBlockMock;
+    protected $generatorBlockMock;
 
     /**
-     * @var Container|MockObject
+     * @var \Magento\Framework\View\Layout\Generator\Container|\PHPUnit_Framework_MockObject_MockObject
      */
-    private $generatorContainerMock;
+    protected $generatorContainerMock;
 
     /**
-     * @var FrontendInterface|MockObject
+     * @var \Magento\Framework\Cache\FrontendInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    private $cacheMock;
+    protected $cacheMock;
 
     /**
-     * @var ReaderPool|MockObject
+     * @var \Magento\Framework\View\Layout\ReaderPool|\PHPUnit_Framework_MockObject_MockObject
      */
-    private $readerPoolMock;
+    protected $readerPoolMock;
 
     /**
-     * @var GeneratorPool|MockObject
+     * @var \Magento\Framework\View\Layout\GeneratorPool|\PHPUnit_Framework_MockObject_MockObject
      */
-    private $generatorPoolMock;
+    protected $generatorPoolMock;
 
     /**
-     * @var ManagerInterface|MockObject
+     * @var \Magento\Framework\Message\ManagerInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    private $messageManagerMock;
+    protected $messageManagerMock;
 
     /**
-     * @var LayoutReaderContextFactory|MockObject
+     * @var \Magento\Framework\View\Layout\Reader\ContextFactory|\PHPUnit_Framework_MockObject_MockObject
      */
-    private $readerContextFactoryMock;
+    protected $readerContextFactoryMock;
 
     /**
-     * @var Layout\Reader\Context|MockObject
+     * @var \Magento\Framework\View\Layout\Reader\Context|\PHPUnit_Framework_MockObject_MockObject
      */
-    private $readerContextMock;
+    protected $readerContextMock;
 
     /**
-     * @var Structure|MockObject
+     * @var \Magento\Framework\View\Page\Config\Structure|\PHPUnit_Framework_MockObject_MockObject
      */
     private $pageConfigStructure;
 
     /**
-     * @var ScheduledStructure|MockObject
+     * @var \Magento\Framework\View\Layout\ScheduledStructure|\PHPUnit_Framework_MockObject_MockObject
      */
     private $layoutScheduledSructure;
 
     /**
-     * @var ContextFactory|MockObject
+     * @var \Magento\Framework\View\Layout\Generator\ContextFactory|\PHPUnit_Framework_MockObject_MockObject
      */
-    private $generatorContextFactoryMock;
+    protected $generatorContextFactoryMock;
 
     /**
-     * @var State|MockObject
+     * @var \Magento\Framework\App\State|\PHPUnit_Framework_MockObject_MockObject
      */
-    private $appStateMock;
+    protected $appStateMock;
 
     /**
-     * @var LoggerInterface|MockObject
+     * @var \Psr\Log\LoggerInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    private $loggerMock;
+    protected $loggerMock;
 
     /**
-     * @var SerializerInterface|MockObject
+     * @var SerializerInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     private $serializer;
 
-    /**
-     * @inheritdoc
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
-     */
-    protected function setUp(): void
+    protected function setUp()
     {
-        $this->structureMock = $this->getMockBuilder(LayoutStructure::class)
+        $this->structureMock = $this->getMockBuilder(\Magento\Framework\View\Layout\Data\Structure::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $this->processorFactoryMock = $this->createPartialMock(ProcessorFactory::class, ['create']);
-        $this->themeResolverMock = $this->getMockForAbstractClass(ResolverInterface::class);
-        $this->processorMock = $this->createMock(Merge::class);
-        $this->eventManagerMock = $this->getMockForAbstractClass(EventManager::class);
-        $this->generatorBlockMock = $this->getMockBuilder(Block::class)
+        $this->processorFactoryMock = $this->createPartialMock(
+            \Magento\Framework\View\Layout\ProcessorFactory::class,
+            ['create']
+        );
+        $this->themeResolverMock = $this->getMockForAbstractClass(
+            \Magento\Framework\View\Design\Theme\ResolverInterface::class
+        );
+        $this->processorMock = $this->createMock(\Magento\Framework\View\Model\Layout\Merge::class);
+        $this->eventManagerMock = $this->createMock(\Magento\Framework\Event\ManagerInterface::class);
+        $this->generatorBlockMock = $this->getMockBuilder(\Magento\Framework\View\Layout\Generator\Block::class)
+            ->disableOriginalConstructor()->getMock();
+        $this->generatorContainerMock = $this->getMockBuilder(\Magento\Framework\View\Layout\Generator\Container::class)
+            ->disableOriginalConstructor()->getMock();
+        $this->cacheMock = $this->getMockBuilder(\Magento\Framework\Cache\FrontendInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $this->generatorContainerMock = $this->getMockBuilder(Container::class)
+        $this->readerPoolMock = $this->getMockBuilder(\Magento\Framework\View\Layout\ReaderPool::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $this->cacheMock = $this->getMockForAbstractClass(FrontendInterface::class);
-        $this->readerPoolMock = $this->getMockBuilder(ReaderPool::class)
+        $this->messageManagerMock = $this->getMockBuilder(\Magento\Framework\Message\ManagerInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $this->messageManagerMock = $this->getMockForAbstractClass(ManagerInterface::class);
-        $this->generatorPoolMock = $this->getMockBuilder(GeneratorPool::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+
+        $this->generatorPoolMock = $this->getMockBuilder(\Magento\Framework\View\Layout\GeneratorPool::class)
+            ->disableOriginalConstructor()->getMock();
         $this->generatorPoolMock->expects($this->any())
             ->method('getGenerator')
-            ->willReturnMap(
-                [
-                    [Block::TYPE, $this->generatorBlockMock],
-                    [Container::TYPE, $this->generatorContainerMock],
-                ]
+            ->will(
+                $this->returnValueMap([
+                    [\Magento\Framework\View\Layout\Generator\Block::TYPE, $this->generatorBlockMock],
+                    [\Magento\Framework\View\Layout\Generator\Container::TYPE, $this->generatorContainerMock],
+                ])
             );
-        $this->readerContextFactoryMock = $this->getMockBuilder(LayoutReaderContextFactory::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->pageConfigStructure = $this->getMockBuilder(Structure::class)
+
+        $this->readerContextFactoryMock = $this->getMockBuilder(
+            \Magento\Framework\View\Layout\Reader\ContextFactory::class
+        )->disableOriginalConstructor()->getMock();
+
+        $this->pageConfigStructure = $this->getMockBuilder(\Magento\Framework\View\Page\Config\Structure::class)
             ->setMethods(['__toArray', 'populateWithArray'])
             ->getMock();
-        $this->layoutScheduledSructure = $this->getMockBuilder(ScheduledStructure::class)
+        $this->layoutScheduledSructure = $this->getMockBuilder(\Magento\Framework\View\Layout\ScheduledStructure::class)
             ->setMethods(['__toArray', 'populateWithArray'])
             ->getMock();
-        $this->readerContextMock = $this->getMockBuilder(LayoutReaderContext::class)
+        $this->readerContextMock = $this->getMockBuilder(\Magento\Framework\View\Layout\Reader\Context::class)
             ->setMethods(['getPageConfigStructure', 'getScheduledStructure'])
             ->disableOriginalConstructor()
             ->getMock();
@@ -197,135 +170,119 @@ class LayoutTest extends TestCase
             ->willReturn($this->pageConfigStructure);
         $this->readerContextMock->expects($this->any())->method('getScheduledStructure')
             ->willReturn($this->layoutScheduledSructure);
-        $this->generatorContextFactoryMock = $this->getMockBuilder(ContextFactory::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->appStateMock = $this->getMockBuilder(State::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->loggerMock = $this->getMockForAbstractClass(LoggerInterface::class);
-        $this->serializer = $this->getMockForAbstractClass(SerializerInterface::class);
-        $this->serializer->expects($this->any())->method('serialize')
-            ->willReturnCallback(
-                function ($value) {
-                    return json_encode($value);
-                }
-            );
-        $this->serializer->expects($this->any())->method('unserialize')
-            ->willReturnCallback(
-                function ($value) {
-                    return json_decode($value, true);
-                }
-            );
 
-        $this->model = (new ObjectManagerHelper($this))->getObject(
-            Layout::class,
-            [
-                'processorFactory' => $this->processorFactoryMock,
-                'eventManager' => $this->eventManagerMock,
-                'structure' => $this->structureMock,
-                'messageManager' => $this->messageManagerMock,
-                'themeResolver' => $this->themeResolverMock,
-                'readerPool' => $this->readerPoolMock,
-                'generatorPool' => $this->generatorPoolMock,
-                'cache' => $this->cacheMock,
-                'readerContextFactory' => $this->readerContextFactoryMock,
-                'generatorContextFactory' => $this->generatorContextFactoryMock,
-                'appState' => $this->appStateMock,
-                'logger' => $this->loggerMock,
-                'cacheable' => true,
-                'serializer' => $this->serializer,
-            ]
+        $this->generatorContextFactoryMock = $this->getMockBuilder(
+            \Magento\Framework\View\Layout\Generator\ContextFactory::class
+        )
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->appStateMock = $this->getMockBuilder(\Magento\Framework\App\State::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->loggerMock = $this->getMockBuilder(\Psr\Log\LoggerInterface::class)
+            ->getMock();
+        $this->serializer = $this->createMock(\Magento\Framework\Serialize\SerializerInterface::class);
+        $this->serializer->expects($this->any())->method('serialize')
+            ->willReturnCallback(function ($value) {
+                return json_encode($value);
+            });
+        $this->serializer->expects($this->any())->method('unserialize')
+            ->willReturnCallback(function ($value) {
+                return json_decode($value, true);
+            });
+
+        $this->model = new \Magento\Framework\View\Layout(
+            $this->processorFactoryMock,
+            $this->eventManagerMock,
+            $this->structureMock,
+            $this->messageManagerMock,
+            $this->themeResolverMock,
+            $this->readerPoolMock,
+            $this->generatorPoolMock,
+            $this->cacheMock,
+            $this->readerContextFactoryMock,
+            $this->generatorContextFactoryMock,
+            $this->appStateMock,
+            $this->loggerMock,
+            true,
+            $this->serializer
         );
     }
 
-    /**
-     * @return void
-     */
-    public function testCreateBlockSuccess(): void
+    public function testCreateBlockSuccess()
     {
-        $blockMock = $this->getMockBuilder(AbstractBlock::class)
+        $blockMock = $this->getMockBuilder(\Magento\Framework\View\Element\AbstractBlock::class)
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
         $this->structureMock->expects($this->once())
             ->method('createStructuralElement')
             ->with(
                 'blockname',
-                Element::TYPE_BLOCK,
-                AbstractBlock::class
-            )
-            ->willReturn('blockname');
-        $this->generatorBlockMock->expects($this->once())->method('createBlock')->willReturn($blockMock);
+                \Magento\Framework\View\Layout\Element::TYPE_BLOCK,
+                \Magento\Framework\View\Element\AbstractBlock::class
+            )->willReturn('blockname');
+        $this->generatorBlockMock->expects($this->once())->method('createBlock')->will($this->returnValue($blockMock));
 
-        $this->model->createBlock(AbstractBlock::class, 'blockname', []);
+        $this->model->createBlock(\Magento\Framework\View\Element\AbstractBlock::class, 'blockname', []);
         $this->assertInstanceOf(
-            AbstractBlock::class,
+            \Magento\Framework\View\Element\AbstractBlock::class,
             $this->model->getBlock('blockname')
         );
         $this->assertFalse($this->model->getBlock('not_exist'));
     }
 
-    /**
-     * @return void
-     */
-    public function testGetUpdate(): void
+    public function testGetUpdate()
     {
-        $themeMock = $this->getMockForAbstractClass(ThemeInterface::class);
+        $themeMock = $this->getMockForAbstractClass(\Magento\Framework\View\Design\ThemeInterface::class);
 
         $this->themeResolverMock->expects($this->once())
             ->method('get')
-            ->willReturn($themeMock);
+            ->will($this->returnValue($themeMock));
 
         $this->processorFactoryMock->expects($this->once())
             ->method('create')
             ->with(['theme' => $themeMock])
-            ->willReturn($this->processorMock);
+            ->will($this->returnValue($this->processorMock));
 
         $this->assertEquals($this->processorMock, $this->model->getUpdate());
         $this->assertEquals($this->processorMock, $this->model->getUpdate());
     }
 
-    /**
-     * @return void
-     */
-    public function testGenerateXml(): void
+    public function testGenerateXml()
     {
-        $themeMock = $this->getMockForAbstractClass(ThemeInterface::class);
+        $themeMock = $this->getMockForAbstractClass(\Magento\Framework\View\Design\ThemeInterface::class);
 
         $this->themeResolverMock->expects($this->once())
             ->method('get')
-            ->willReturn($themeMock);
+            ->will($this->returnValue($themeMock));
 
         $this->processorFactoryMock->expects($this->once())
             ->method('create')
             ->with(['theme' => $themeMock])
-            ->willReturn($this->processorMock);
+            ->will($this->returnValue($this->processorMock));
 
         $xmlString = '<?xml version="1.0"?><layout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
             . '<some_update>123</some_update></layout>';
-        $xml = simplexml_load_string($xmlString, Element::class);
+        $xml = simplexml_load_string($xmlString, \Magento\Framework\View\Layout\Element::class);
         $this->processorMock->expects($this->once())
             ->method('asSimplexml')
-            ->willReturn($xml);
+            ->will($this->returnValue($xml));
 
         $this->structureMock->expects($this->once())
             ->method('importElements')
-            ->with([])
-            ->willReturnSelf();
+            ->with($this->equalTo([]))
+            ->will($this->returnSelf());
         $this->assertSame($this->model, $this->model->generateXml());
         $this->assertSame('<some_update>123</some_update>', $this->model->getNode('some_update')->asXML());
     }
 
-    /**
-     * @return void
-     */
-    public function testGetChildBlock(): void
+    public function testGetChildBlock()
     {
         $customBlockName = 'custom_block';
         $customBlockParentName = 'custom_block_parent';
         $customBlockAlias = 'custom_block_alias';
 
-        $blockMock = $this->getMockBuilder(Template::class)
+        $blockMock = $this->getMockBuilder(\Magento\Framework\View\Element\Template::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -342,19 +299,16 @@ class LayoutTest extends TestCase
         $this->structureMock->expects($this->once())
             ->method('getAttribute')
             ->with($customBlockName, 'type')
-            ->willReturn(Element::TYPE_BLOCK);
+            ->willReturn(\Magento\Framework\View\Layout\Element::TYPE_BLOCK);
 
         $this->model->setBlock($customBlockName, $blockMock);
         $this->assertInstanceOf(
-            AbstractBlock::class,
+            \Magento\Framework\View\Element\AbstractBlock::class,
             $this->model->getChildBlock($customBlockParentName, $customBlockAlias)
         );
     }
 
-    /**
-     * @return void
-     */
-    public function testGetChildNonExistBlock(): void
+    public function testGetChildNonExistBlock()
     {
         $this->structureMock->expects($this->once())
             ->method('getChildId')
@@ -363,150 +317,120 @@ class LayoutTest extends TestCase
         $this->assertFalse($this->model->getChildBlock('non_exist_parent', 'non_exist_alias'));
     }
 
-    /**
-     * @return void
-     */
-    public function testSetChild(): void
+    public function testSetChild()
     {
         $elementName = 'child';
         $parentName = 'parent';
         $alias = 'some_alias';
         $this->structureMock->expects($this->once())
             ->method('setAsChild')
-            ->with($elementName, $parentName, $alias)
-            ->willReturnSelf();
+            ->with($this->equalTo($elementName), $this->equalTo($parentName), $this->equalTo($alias))
+            ->will($this->returnSelf());
         $this->assertSame($this->model, $this->model->setChild($parentName, $elementName, $alias));
     }
 
-    /**
-     * @return void
-     */
-    public function testUnsetChild(): void
+    public function testUnsetChild()
     {
         $parentName = 'parent';
         $alias = 'some_alias';
         $this->structureMock->expects($this->once())
             ->method('unsetChild')
-            ->with($parentName, $alias)
-            ->willReturnSelf();
+            ->with($this->equalTo($parentName), $this->equalTo($alias))
+            ->will($this->returnSelf());
         $this->assertSame($this->model, $this->model->unsetChild($parentName, $alias));
     }
 
-    /**
-     * @return void
-     */
-    public function testGetChildNames(): void
+    public function testGetChildNames()
     {
         $parentName = 'parent';
         $childrenArray = ['key1' => 'value1', 'key2' => 'value2'];
         $this->structureMock->expects($this->once())
             ->method('getChildren')
-            ->with($parentName)
-            ->willReturn($childrenArray);
+            ->with($this->equalTo($parentName))
+            ->will($this->returnValue($childrenArray));
         $this->assertSame(['key1', 'key2'], $this->model->getChildNames($parentName));
     }
 
-    /**
-     * @return void
-     */
-    public function testGetChildBlocks(): void
+    public function testGetChildBlocks()
     {
         $parentName = 'parent';
         $childrenArray = ['block_name' => 'value1'];
         $this->structureMock->expects($this->once())
             ->method('getChildren')
-            ->with($parentName)
-            ->willReturn($childrenArray);
+            ->with($this->equalTo($parentName))
+            ->will($this->returnValue($childrenArray));
 
-        $blockMock = $this->getMockBuilder(AbstractBlock::class)
+        $blockMock = $this->getMockBuilder(\Magento\Framework\View\Element\AbstractBlock::class)
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
         $this->structureMock->expects($this->once())
             ->method('createStructuralElement')
             ->with(
                 'block_name',
-                Element::TYPE_BLOCK,
-                AbstractBlock::class
-            )
-            ->willReturn('block_name');
-        $this->generatorBlockMock->expects($this->once())
-            ->method('createBlock')
-            ->willReturn($blockMock);
+                \Magento\Framework\View\Layout\Element::TYPE_BLOCK,
+                \Magento\Framework\View\Element\AbstractBlock::class
+            )->willReturn('block_name');
+        $this->generatorBlockMock->expects($this->once())->method('createBlock')->will($this->returnValue($blockMock));
 
         $this->assertSame(
             $blockMock,
-            $this->model->createBlock(AbstractBlock::class, 'block_name', [])
+            $this->model->createBlock(\Magento\Framework\View\Element\AbstractBlock::class, 'block_name', [])
         );
         $this->assertSame(['value1' => $blockMock], $this->model->getChildBlocks($parentName));
     }
 
-    /**
-     * @return void
-     */
-    public function testGetChildName(): void
+    public function testGetChildName()
     {
         $parentName = 'parent';
         $alias = 'some_alias';
         $this->structureMock->expects($this->once())
             ->method('getChildId')
-            ->with($parentName, $alias)
-            ->willReturn('1');
+            ->with($this->equalTo($parentName), $this->equalTo($alias))
+            ->will($this->returnValue('1'));
         $this->assertSame('1', $this->model->getChildName($parentName, $alias));
     }
 
-    /**
-     * @return void
-     */
-    public function testAddToParentGroup(): void
+    public function testAddToParentGroup()
     {
         $blockName = 'block_name';
         $parentGroup = 'parent_group';
         $this->structureMock->expects($this->once())
             ->method('addToParentGroup')
-            ->with($blockName, $parentGroup)
-            ->willReturnSelf();
+            ->with($this->equalTo($blockName), $this->equalTo($parentGroup))
+            ->will($this->returnSelf());
         $this->assertSame($this->structureMock, $this->model->addToParentGroup($blockName, $parentGroup));
     }
 
-    /**
-     * @return void
-     */
-    public function testGetGroupChildNames(): void
+    public function testGetGroupChildNames()
     {
         $blockName = 'block_name';
         $groupName = 'group_name';
         $this->structureMock->expects($this->once())
             ->method('getGroupChildNames')
-            ->with($blockName, $groupName)
-            ->willReturnSelf();
+            ->with($this->equalTo($blockName), $this->equalTo($groupName))
+            ->will($this->returnSelf());
         $this->assertSame($this->structureMock, $this->model->getGroupChildNames($blockName, $groupName));
     }
 
-    /**
-     * @return void
-     */
-    public function testHasElement(): void
+    public function testHasElement()
     {
         $elementName = 'name';
         $this->structureMock->expects($this->once())
             ->method('hasElement')
-            ->with($elementName)
-            ->willReturn(true);
+            ->with($this->equalTo($elementName))
+            ->will($this->returnValue(true));
         $this->assertTrue($this->model->hasElement($elementName));
     }
 
-    /**
-     * @return void
-     */
-    public function testGetElementProperty(): void
+    public function testGetElementProperty()
     {
         $elementName = 'name';
         $elementAttr = 'attribute';
         $result = 'result';
         $this->structureMock->expects($this->once())
             ->method('getAttribute')
-            ->with($elementName, $elementAttr)
-            ->willReturn($result);
+            ->with($this->equalTo($elementName), $this->equalTo($elementAttr))
+            ->will($this->returnValue($result));
         $this->assertSame($result, $this->model->getElementProperty($elementName, $elementAttr));
     }
 
@@ -514,21 +438,20 @@ class LayoutTest extends TestCase
      * @param bool $hasElement
      * @param string $attribute
      * @param bool $result
-     * @return void
      * @dataProvider isContainerDataProvider
      */
-    public function testIsContainer($hasElement, $attribute, $result): void
+    public function testIsContainer($hasElement, $attribute, $result)
     {
         $elementName = 'element_name';
         $this->structureMock->expects($this->once())
             ->method('hasElement')
-            ->with($elementName)
-            ->willReturn($hasElement);
+            ->with($this->equalTo($elementName))
+            ->will($this->returnValue($hasElement));
         if ($hasElement) {
             $this->structureMock->expects($this->once())
                 ->method('getAttribute')
-                ->with($elementName, 'type')
-                ->willReturn($attribute);
+                ->with($this->equalTo($elementName), $this->equalTo('type'))
+                ->will($this->returnValue($attribute));
         }
         $this->assertSame($result, $this->model->isContainer($elementName));
     }
@@ -536,7 +459,7 @@ class LayoutTest extends TestCase
     /**
      * @return array
      */
-    public function isContainerDataProvider(): array
+    public function isContainerDataProvider()
     {
         return [
             [false, '', false],
@@ -550,26 +473,25 @@ class LayoutTest extends TestCase
      * @param bool $parentName
      * @param array $containerConfig
      * @param bool $result
-     * @return void
      * @dataProvider isManipulationAllowedDataProvider
      */
-    public function testIsManipulationAllowed($parentName, $containerConfig, $result): void
+    public function testIsManipulationAllowed($parentName, $containerConfig, $result)
     {
         $elementName = 'element_name';
         $this->structureMock->expects($this->once())
             ->method('getParentId')
-            ->with($elementName)
-            ->willReturn($parentName);
+            ->with($this->equalTo($elementName))
+            ->will($this->returnValue($parentName));
         if ($parentName) {
             $this->structureMock->expects($this->once())
                 ->method('hasElement')
-                ->with($parentName)
-                ->willReturn($containerConfig['has_element']);
+                ->with($this->equalTo($parentName))
+                ->will($this->returnValue($containerConfig['has_element']));
             if ($containerConfig['has_element']) {
                 $this->structureMock->expects($this->once())
                     ->method('getAttribute')
-                    ->with($parentName, 'type')
-                    ->willReturn($containerConfig['attribute']);
+                    ->with($this->equalTo($parentName), $this->equalTo('type'))
+                    ->will($this->returnValue($containerConfig['attribute']));
             }
         }
 
@@ -579,7 +501,7 @@ class LayoutTest extends TestCase
     /**
      * @return array
      */
-    public function isManipulationAllowedDataProvider(): array
+    public function isManipulationAllowedDataProvider()
     {
         return [
             ['parent', ['has_element' => true, 'attribute' => 'container'], true],
@@ -592,90 +514,74 @@ class LayoutTest extends TestCase
      * @covers \Magento\Framework\View\Layout::setBlock
      * @covers \Magento\Framework\View\Layout::getAllBlocks
      * @covers \Magento\Framework\View\Layout::unsetElement
-     * @return void
      */
-    public function testSetGetBlock(): void
+    public function testSetGetBlock()
     {
         $blockName = 'some_name';
-        $blockMock = $this->getMockBuilder(AbstractBlock::class)
+        $blockMock = $this->getMockBuilder(\Magento\Framework\View\Element\AbstractBlock::class)
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
         $this->assertSame($this->model, $this->model->setBlock($blockName, $blockMock));
         $this->assertSame([$blockName => $blockMock], $this->model->getAllBlocks());
         $this->structureMock->expects($this->once())
             ->method('unsetElement')
-            ->with($blockName)
-            ->willReturnSelf();
+            ->with($this->equalTo($blockName))
+            ->will($this->returnSelf());
         $this->assertSame($this->model, $this->model->unsetElement($blockName));
         $this->assertSame([], $this->model->getAllBlocks());
     }
 
-    /**
-     * @return void
-     */
-    public function testRenameElement(): void
+    public function testRenameElement()
     {
         $oldName = 'old_name';
         $newName = 'new_name';
-        $blockMock = $this->getMockBuilder(AbstractBlock::class)
+        $blockMock = $this->getMockBuilder(\Magento\Framework\View\Element\AbstractBlock::class)
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
 
         $this->structureMock->expects($this->once())
             ->method('renameElement')
-            ->with($oldName, $newName)
-            ->willReturnSelf();
+            ->with($this->equalTo($oldName), $this->equalTo($newName))
+            ->will($this->returnSelf());
         $this->assertSame($this->model, $this->model->setBlock($oldName, $blockMock));
         $this->assertSame($this->model, $this->model->renameElement($oldName, $newName));
         $this->assertSame([$newName => $blockMock], $this->model->getAllBlocks());
     }
 
-    /**
-     * @return void
-     */
-    public function testGetParentName(): void
+    public function testGetParentName()
     {
         $childName = 'child_name';
         $parentId = 'parent_id';
         $this->structureMock->expects($this->once())
             ->method('getParentId')
-            ->with($childName)
-            ->willReturn($parentId);
+            ->with($this->equalTo($childName))
+            ->will($this->returnValue($parentId));
         $this->assertSame($parentId, $this->model->getParentName($childName));
     }
 
-    /**
-     * @return void
-     */
-    public function testGetElementAlias(): void
+    public function testGetElementAlias()
     {
         $name = 'child_name';
         $parentId = 'parent_id';
         $alias = 'alias';
         $this->structureMock->expects($this->once())
             ->method('getParentId')
-            ->with($name)
-            ->willReturn($parentId);
+            ->with($this->equalTo($name))
+            ->will($this->returnValue($parentId));
         $this->structureMock->expects($this->once())
             ->method('getChildAlias')
-            ->with($parentId, $name)
-            ->willReturn($alias);
+            ->with($this->equalTo($parentId), $this->equalTo($name))
+            ->will($this->returnValue($alias));
         $this->assertSame($alias, $this->model->getElementAlias($name));
     }
 
-    /**
-     * @return void
-     */
-    public function testAddRemoveOutputElement(): void
+    public function testAddRemoveOutputElement()
     {
         $this->assertSame($this->model, $this->model->addOutputElement('name'));
         $this->assertSame($this->model, $this->model->removeOutputElement('name'));
     }
 
-    /**
-     * @return void
-     */
-    public function testIsPrivate(): void
+    public function testIsPrivate()
     {
         $this->assertFalse($this->model->isPrivate());
         $this->assertSame($this->model, $this->model->setIsPrivate(true));
@@ -685,19 +591,18 @@ class LayoutTest extends TestCase
     /**
      * @param array $type
      * @param array $blockInstance
-     * @return void
      * @dataProvider getBlockSingletonDataProvider
      */
-    public function testGetBlockSingleton($type, $blockInstance, $isAbstract): void
+    public function testGetBlockSingleton($type, $blockInstance, $isAbstract)
     {
         $blockMock = $this->createMock($blockInstance);
-        $this->generatorBlockMock->expects($this->once())->method('createBlock')->willReturn($blockMock);
+        $this->generatorBlockMock->expects($this->once())->method('createBlock')->will($this->returnValue($blockMock));
 
         if ($isAbstract) {
             $blockMock->expects($this->any())
                 ->method('setLayout')
-                ->with($this->model)
-                ->willReturnSelf();
+                ->with($this->equalTo($this->model))
+                ->will($this->returnSelf());
         }
         $this->assertInstanceOf($blockInstance, $this->model->getBlockSingleton($type));
         // singleton test
@@ -707,12 +612,11 @@ class LayoutTest extends TestCase
     /**
      * @return array
      */
-    public function getBlockSingletonDataProvider(): array
+    public function getBlockSingletonDataProvider()
     {
         return [
             [
-                'some_type',
-                Template::class,
+                'some_type', \Magento\Framework\View\Element\Template::class,
                 true,
             ],
         ];
@@ -722,10 +626,9 @@ class LayoutTest extends TestCase
      * @param array $rendererData
      * @param array $getData
      * @param bool $result
-     * @return void
      * @dataProvider getRendererOptionsDataProvider
      */
-    public function testAddGetRendererOptions($rendererData, $getData, $result): void
+    public function testAddGetRendererOptions($rendererData, $getData, $result)
     {
         $this->assertSame(
             $this->model,
@@ -747,7 +650,7 @@ class LayoutTest extends TestCase
     /**
      * @return array
      */
-    public function getRendererOptionsDataProvider(): array
+    public function getRendererOptionsDataProvider()
     {
         $rendererData = [
             'namespace' => 'namespace_value',
@@ -803,94 +706,47 @@ class LayoutTest extends TestCase
 
     /**
      * @param string $xmlString
-     * @param string $blockName
-     * @param bool $hasElement
-     * @param bool $cacheable
-     * @return void
+     * @param bool $result
      * @dataProvider isCacheableDataProvider
      */
-    public function testIsCacheable(string $xmlString, string $blockName, bool $hasElement, bool $cacheable): void
+    public function testIsCacheable($xmlString, $result)
     {
-        $this->structureMock->method('hasElement')->with($blockName)->willReturn($hasElement);
-
-        $this->assertTrue($this->model->loadString($xmlString));
-        $this->assertSame($cacheable, $this->model->isCacheable());
+        $xml = simplexml_load_string($xmlString, \Magento\Framework\View\Layout\Element::class);
+        $this->assertSame($this->model, $this->model->setXml($xml));
+        $this->assertSame($result, $this->model->isCacheable());
     }
 
     /**
      * @return array
      */
-    public function isCacheableDataProvider(): array
+    public function isCacheableDataProvider()
     {
         return [
-            'blockWithoutName' => [
-                'xml' => '<?xml version="1.0"?><layout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
-                    . '<block></block></layout>',
-                'blockName' => '',
-                'hasElement' => true,
-                'cacheable' => true,
+            [
+                '<?xml version="1.0"?><layout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
+                . '<block></block></layout>',
+                true,
             ],
-            'notCacheableBlockWithoutName' => [
-                'xml' => '<?xml version="1.0"?><layout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
-                    . '<block cacheable="false"></block></layout>',
-                'blockName' => '',
-                'hasElement' => true,
-                'cacheable' => true,
-            ],
-            'notCacheableBlockWithMissingBlockReference' => [
-                'xml' => '<?xml version="1.0"?><layout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
-                    . '<referenceBlock name="not_existing_block">'
-                    . '<block name="non_cacheable_block" cacheable="false"></block>'
-                    . '</referenceBlock></layout>',
-                'blockName' => 'non_cacheable_block',
-                'hasElement' => false,
-                'cacheable' => true,
-            ],
-            'notCacheableBlockWithMissingContainerReference' => [
-                'xml' => '<?xml version="1.0"?><layout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
-                    . '<referenceContainer name="not_existing_container">'
-                    . '<block name="non_cacheable_block" cacheable="false"></block>'
-                    . '</referenceContainer></layout>',
-                'blockName' => 'non_cacheable_block',
-                'hasElement' => false,
-                'cacheable' => true,
-            ],
-            'notCacheableBlockWithExistingBlockReference' => [
-                'xml' => '<?xml version="1.0"?><layout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
-                    . '<referenceBlock name="existing_block">'
-                    . '<block name="non_cacheable_block" cacheable="false"></block>'
-                    . '</referenceBlock></layout>',
-                'blockName' => 'non_cacheable_block',
-                'hasElement' => true,
-                'cacheable' => false,
-            ],
-            'notCacheableBlockWithExistingContainerReference' => [
-                'xml' => '<?xml version="1.0"?><layout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
-                    . '<referenceContainer name="existing_container">'
-                    . '<block name="non_cacheable_block" cacheable="false"></block>'
-                    . '</referenceContainer></layout>',
-                'blockName' => 'non_cacheable_block',
-                'hasElement' => true,
-                'cacheable' => false,
+            [
+                '<?xml version="1.0"?><layout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
+                . '<block cacheable="false"></block></layout>',
+                false
             ],
         ];
     }
 
-    /**
-     * @return void
-     */
-    public function testGenerateElementsWithoutCache(): void
+    public function testGenerateElementsWithoutCache()
     {
         $this->readerContextFactoryMock->expects($this->once())
             ->method('create')
             ->willReturn($this->readerContextMock);
         $layoutCacheId = 'layout_cache_id';
         $handles = ['default', 'another'];
-        /** @var Element $xml */
-        $xml = simplexml_load_string('<layout/>', Element::class);
+        /** @var \Magento\Framework\View\Layout\Element $xml */
+        $xml = simplexml_load_string('<layout/>', \Magento\Framework\View\Layout\Element::class);
         $this->model->setXml($xml);
 
-        $themeMock = $this->getMockForAbstractClass(ThemeInterface::class);
+        $themeMock = $this->getMockForAbstractClass(\Magento\Framework\View\Design\ThemeInterface::class);
         $this->themeResolverMock->expects($this->once())
             ->method('get')
             ->willReturn($themeMock);
@@ -923,22 +779,20 @@ class LayoutTest extends TestCase
                 'field_3_1' => '1244',
                 'field_3_2' => null,
                 'field_3_3' => false,
-            ],
+            ]
         ];
-        $this->pageConfigStructure->expects($this->any())
-            ->method('__toArray')
+        $this->pageConfigStructure->expects($this->any())->method('__toArray')
             ->willReturn($pageConfigStructureData);
 
         $layoutScheduledStructureData = [
             'field_1' => 1283,
-            'field_2' => 'text_qwertyuiop[]asdfghjkl;',
+            'field_2' => 'text_qwertyuiop[]asdfghjkl;'
         ];
-        $this->layoutScheduledSructure->expects($this->any())
-            ->method('__toArray')
+        $this->layoutScheduledSructure->expects($this->any())->method('__toArray')
             ->willReturn($layoutScheduledStructureData);
         $data = [
             'pageConfigStructure' => $pageConfigStructureData,
-            'scheduledStructure' => $layoutScheduledStructureData,
+            'scheduledStructure' => $layoutScheduledStructureData
         ];
 
         $this->cacheMock->expects($this->once())
@@ -946,7 +800,7 @@ class LayoutTest extends TestCase
             ->with(json_encode($data), 'structure_' . $layoutCacheId, $handles)
             ->willReturn(true);
 
-        $generatorContextMock = $this->getMockBuilder(Context::class)
+        $generatorContextMock = $this->getMockBuilder(\Magento\Framework\View\Layout\Generator\Context::class)
             ->disableOriginalConstructor()
             ->getMock();
         $this->generatorContextFactoryMock->expects($this->once())
@@ -961,9 +815,9 @@ class LayoutTest extends TestCase
 
         $elements = [
             'name_1' => ['type' => '', 'parent' => null],
-            'name_2' => ['type' => Element::TYPE_CONTAINER, 'parent' => null],
+            'name_2' => ['type' => \Magento\Framework\View\Layout\Element::TYPE_CONTAINER, 'parent' => null],
             'name_3' => ['type' => '', 'parent' => 'parent'],
-            'name_4' => ['type' => Element::TYPE_CONTAINER, 'parent' => 'parent'],
+            'name_4' => ['type' => \Magento\Framework\View\Layout\Element::TYPE_CONTAINER, 'parent' => 'parent'],
         ];
 
         $this->structureMock->expects($this->once())
@@ -973,20 +827,17 @@ class LayoutTest extends TestCase
         $this->model->generateElements();
     }
 
-    /**
-     * @return void
-     */
-    public function testGenerateElementsWithCache(): void
+    public function testGenerateElementsWithCache()
     {
         $layoutCacheId = 'layout_cache_id';
-        /** @var Element $xml */
-        $xml = simplexml_load_string('<layout/>', Element::class);
+        /** @var \Magento\Framework\View\Layout\Element $xml */
+        $xml = simplexml_load_string('<layout/>', \Magento\Framework\View\Layout\Element::class);
         $this->model->setXml($xml);
 
         $this->readerContextFactoryMock->expects($this->once())
             ->method('create')
             ->willReturn($this->readerContextMock);
-        $themeMock = $this->getMockForAbstractClass(ThemeInterface::class);
+        $themeMock = $this->getMockForAbstractClass(\Magento\Framework\View\Design\ThemeInterface::class);
         $this->themeResolverMock->expects($this->once())
             ->method('get')
             ->willReturn($themeMock);
@@ -1008,20 +859,18 @@ class LayoutTest extends TestCase
                 'field_3_3' => false,
             ]
         ];
-        $this->pageConfigStructure->expects($this->once())
-            ->method('populateWithArray')
+        $this->pageConfigStructure->expects($this->once())->method('populateWithArray')
             ->with($pageConfigStructureData);
 
         $layoutScheduledStructureData = [
             'field_1' => 1283,
-            'field_2' => 'text_qwertyuiop[]asdfghjkl;',
+            'field_2' => 'text_qwertyuiop[]asdfghjkl;'
         ];
-        $this->layoutScheduledSructure->expects($this->once())
-            ->method('populateWithArray')
+        $this->layoutScheduledSructure->expects($this->once())->method('populateWithArray')
             ->with($layoutScheduledStructureData);
         $data = [
             'pageConfigStructure' => $pageConfigStructureData,
-            'scheduledStructure' => $layoutScheduledStructureData,
+            'scheduledStructure' => $layoutScheduledStructureData
         ];
 
         $this->cacheMock->expects($this->once())
@@ -1034,7 +883,7 @@ class LayoutTest extends TestCase
         $this->cacheMock->expects($this->never())
             ->method('save');
 
-        $generatorContextMock = $this->getMockBuilder(Context::class)
+        $generatorContextMock = $this->getMockBuilder(\Magento\Framework\View\Layout\Generator\Context::class)
             ->disableOriginalConstructor()
             ->getMock();
         $this->generatorContextFactoryMock->expects($this->once())
@@ -1049,9 +898,9 @@ class LayoutTest extends TestCase
 
         $elements = [
             'name_1' => ['type' => '', 'parent' => null],
-            'name_2' => ['type' => Element::TYPE_CONTAINER, 'parent' => null],
+            'name_2' => ['type' => \Magento\Framework\View\Layout\Element::TYPE_CONTAINER, 'parent' => null],
             'name_3' => ['type' => '', 'parent' => 'parent'],
-            'name_4' => ['type' => Element::TYPE_CONTAINER, 'parent' => 'parent'],
+            'name_4' => ['type' => \Magento\Framework\View\Layout\Element::TYPE_CONTAINER, 'parent' => 'parent'],
         ];
 
         $this->structureMock->expects($this->once())
@@ -1061,21 +910,17 @@ class LayoutTest extends TestCase
         $this->model->generateElements();
     }
 
-    /**
-     * @return void
-     */
-    public function testGetXml(): void
+    public function testGetXml()
     {
         $xml = '<layout/>';
-        $this->assertSame($xml, Layout::LAYOUT_NODE);
+        $this->assertSame($xml, \Magento\Framework\View\Layout::LAYOUT_NODE);
     }
 
     /**
      * @param mixed $displayValue
-     * @return void
      * @dataProvider renderElementDisplayDataProvider
      */
-    public function testRenderElementDisplay($displayValue): void
+    public function testRenderElementDisplay($displayValue)
     {
         $name = 'test_container';
         $child = 'child_block';
@@ -1088,14 +933,14 @@ class LayoutTest extends TestCase
                 [
                     [$name, 'display', $displayValue],
                     [$child, 'display', $displayValue],
-                    [$child, 'type', Element::TYPE_BLOCK],
+                    [$child, 'type', \Magento\Framework\View\Layout\Element::TYPE_BLOCK]
                 ]
             );
 
         $this->structureMock->expects($this->atLeastOnce())->method('hasElement')
             ->willReturnMap(
                 [
-                    [$child, true],
+                    [$child, true]
                 ]
             );
 
@@ -1104,10 +949,10 @@ class LayoutTest extends TestCase
             ->with($name)
             ->willReturn($children);
 
-        $block = $this->createMock(AbstractBlock::class);
+        $block = $this->createMock(\Magento\Framework\View\Element\AbstractBlock::class);
         $block->expects($this->once())->method('toHtml')->willReturn($blockHtml);
 
-        $renderingOutput = new DataObject();
+        $renderingOutput = new \Magento\Framework\DataObject();
         $renderingOutput->setData('output', $blockHtml);
 
         $this->eventManagerMock->expects($this->at(0))
@@ -1133,6 +978,7 @@ class LayoutTest extends TestCase
      */
     public function testRenderElementDoNotDisplay($displayValue)
     {
+        $displayValue = 'false';
         $name = 'test_container';
         $blockHtml = '';
 
@@ -1146,19 +992,19 @@ class LayoutTest extends TestCase
     /**
      * @return array
      */
-    public function renderElementDoNotDisplayDataProvider(): array
+    public function renderElementDoNotDisplayDataProvider()
     {
         return [
             ['false'],
             ['0'],
-            [0],
+            [0]
         ];
     }
 
     /**
      * @return array
      */
-    public function renderElementDisplayDataProvider(): array
+    public function renderElementDisplayDataProvider()
     {
         return [
             [true],
@@ -1166,7 +1012,7 @@ class LayoutTest extends TestCase
             [1],
             ['true'],
             [false],
-            [null],
+            [null]
         ];
     }
 }

@@ -7,11 +7,8 @@ namespace Magento\Framework\Webapi;
 
 use Magento\Framework\Api\AbstractExtensibleObject;
 use Magento\Framework\Api\ExtensibleDataObjectConverter;
-use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Reflection\DataObjectProcessor;
 use Magento\Framework\Reflection\MethodsMap;
-use Magento\Framework\Reflection\TypeProcessor;
-use Laminas\Code\Reflection\ClassReflection;
 
 /**
  * Data object converter
@@ -32,23 +29,15 @@ class ServiceOutputProcessor implements ServicePayloadConverterInterface
     protected $methodsMapProcessor;
 
     /**
-     * @var TypeProcessor|null
-     */
-    private $typeProcessor;
-
-    /**
      * @param DataObjectProcessor $dataObjectProcessor
      * @param MethodsMap $methodsMapProcessor
-     * @param TypeProcessor|null $typeProcessor
      */
     public function __construct(
         DataObjectProcessor $dataObjectProcessor,
-        MethodsMap $methodsMapProcessor,
-        TypeProcessor $typeProcessor = null
+        MethodsMap $methodsMapProcessor
     ) {
         $this->dataObjectProcessor = $dataObjectProcessor;
         $this->methodsMapProcessor = $methodsMapProcessor;
-        $this->typeProcessor = $typeProcessor ?: ObjectManager::getInstance()->get(TypeProcessor::class);
     }
 
     /**
@@ -69,12 +58,6 @@ class ServiceOutputProcessor implements ServicePayloadConverterInterface
     {
         /** @var string $dataType */
         $dataType = $this->methodsMapProcessor->getMethodReturnType($serviceClassName, $serviceMethodName);
-
-        if (class_exists($serviceClassName) || interface_exists($serviceClassName)) {
-            $sourceClass = new ClassReflection($serviceClassName);
-            $dataType = $this->typeProcessor->resolveFullyQualifiedClassName($sourceClass, $dataType);
-        }
-
         return $this->convertValue($data, $dataType);
     }
 

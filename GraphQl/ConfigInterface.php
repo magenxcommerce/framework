@@ -25,11 +25,9 @@ interface ConfigInterface
     public function getConfigElement(string $configElementName) : ConfigElementInterface;
 
     /**
-     * Return all type names declared in a GraphQL schema's configuration and their type.
+     * Return all type names from a GraphQL schema's configuration.
      *
-     * Format is ['name' => 'example value', 'type' = 'example value']
-     *
-     * @return array $types
+     * @return string[]
      */
-    public function getDeclaredTypes() : array;
+    public function getDeclaredTypeNames() : array;
 }

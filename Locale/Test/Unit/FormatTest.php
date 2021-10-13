@@ -3,76 +3,63 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
 
 namespace Magento\Framework\Locale\Test\Unit;
 
-use Magento\Directory\Model\Currency;
-use Magento\Directory\Model\CurrencyFactory;
-use Magento\Framework\App\ScopeInterface;
-use Magento\Framework\App\ScopeResolverInterface;
-use Magento\Framework\Locale\Format;
-use Magento\Framework\Locale\ResolverInterface;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
-
-/**
- * Tests class for Number locale format
- */
-class FormatTest extends TestCase
+class FormatTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @var Format
+     * @var \Magento\Framework\Locale\Format
      */
     protected $formatModel;
 
     /**
-     * @var MockObject|ResolverInterface
+     * @var \PHPUnit_Framework_MockObject_MockObject|\Magento\Framework\Locale\ResolverInterface
      */
     protected $localeResolver;
 
     /**
-     * @var MockObject|ScopeInterface
+     * @var \PHPUnit_Framework_MockObject_MockObject|\Magento\Framework\App\ScopeInterface
      */
     protected $scope;
 
     /**
-     * @var MockObject|ScopeResolverInterface
+     * @var \PHPUnit_Framework_MockObject_MockObject|\Magento\Framework\App\ScopeResolverInterface
      */
     protected $scopeResolver;
 
     /**
-     * @var MockObject|Currency
+     * @var \PHPUnit_Framework_MockObject_MockObject|\Magento\Directory\Model\Currency
      */
     protected $currency;
 
     /**
      * {@inheritDoc}
      */
-    protected function setUp(): void
+    protected function setUp()
     {
-        $this->currency = $this->getMockBuilder(Currency::class)
+        $this->currency = $this->getMockBuilder(\Magento\Directory\Model\Currency::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $this->scope = $this->getMockBuilder(ScopeInterface::class)
+        $this->scope = $this->getMockBuilder(\Magento\Framework\App\ScopeInterface::class)
             ->setMethods(['getCurrentCurrency'])
             ->getMockForAbstractClass();
 
-        $this->scopeResolver = $this->getMockBuilder(ScopeResolverInterface::class)
+        $this->scopeResolver = $this->getMockBuilder(\Magento\Framework\App\ScopeResolverInterface::class)
             ->setMethods(['getScope'])
             ->getMockForAbstractClass();
         $this->scopeResolver->expects($this->any())
             ->method('getScope')
             ->willReturn($this->scope);
-        $this->localeResolver = $this->getMockBuilder(ResolverInterface::class)
+        $this->localeResolver = $this->getMockBuilder(\Magento\Framework\Locale\ResolverInterface::class)
             ->getMock();
 
-        /** @var CurrencyFactory|MockObject $currencyFactory */
-        $currencyFactory = $this->getMockBuilder(CurrencyFactory::class)
+        /** @var \Magento\Directory\Model\CurrencyFactory|\PHPUnit_Framework_MockObject_MockObject $currencyFactory */
+        $currencyFactory = $this->getMockBuilder(\Magento\Directory\Model\CurrencyFactory::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->formatModel = new Format(
+        $this->formatModel = new \Magento\Framework\Locale\Format(
             $this->scopeResolver,
             $this->localeResolver,
             $currencyFactory
@@ -81,17 +68,15 @@ class FormatTest extends TestCase
 
     /**
      * @param string $localeCode
-     * @param string $currencyCode
      * @param array $expectedResult
      * @dataProvider getPriceFormatDataProvider
      */
-    public function testGetPriceFormat($localeCode, $currencyCode, array $expectedResult): void
+    public function testGetPriceFormat($localeCode, array $expectedResult): void
     {
         $this->scope->expects($this->once())
             ->method('getCurrentCurrency')
             ->willReturn($this->currency);
 
-        $this->currency->method('getCode')->willReturn($currencyCode);
         $result = $this->formatModel->getPriceFormat($localeCode);
         $intersection = array_intersect_assoc($result, $expectedResult);
         $this->assertCount(count($expectedResult), $intersection);
@@ -103,27 +88,22 @@ class FormatTest extends TestCase
      */
     public function getPriceFormatDataProvider(): array
     {
-        $swissGroupSymbol = INTL_ICU_VERSION >= 59.1 ? '’' : '\'';
         return [
-            ['en_US', 'USD', ['decimalSymbol' => '.', 'groupSymbol' => ',']],
-            ['de_DE', 'EUR', ['decimalSymbol' => ',', 'groupSymbol' => '.']],
-            ['de_CH', 'CHF', ['decimalSymbol' => '.', 'groupSymbol' => $swissGroupSymbol]],
-            ['uk_UA', 'UAH', ['decimalSymbol' => ',', 'groupSymbol' => ' ']]
+            ['en_US', ['decimalSymbol' => '.', 'groupSymbol' => ',']],
+            ['de_DE', ['decimalSymbol' => ',', 'groupSymbol' => '.']],
+            ['de_CH', ['decimalSymbol' => '.', 'groupSymbol' => '\'']],
+            ['uk_UA', ['decimalSymbol' => ',', 'groupSymbol' => ' ']]
         ];
     }
 
     /**
      *
-     * @param mixed $value
-     * @param float $expected
-     * @param string $locale
+     * @param        mixed $value
+     * @param        float $expected
      * @dataProvider provideNumbers
      */
-    public function testGetNumber(string $value, float $expected, string $locale = null): void
+    public function testGetNumber($value, $expected): void
     {
-        if ($locale !== null) {
-            $this->localeResolver->method('getLocale')->willReturn($locale);
-        }
         $this->assertEquals($expected, $this->formatModel->getNumber($value));
     }
 
@@ -144,8 +124,6 @@ class FormatTest extends TestCase
             ['2 054.52', 2054.52],
             ['2,46 GB', 2.46],
             ['2,054.00', 2054],
-            ['4,000', 4000.0, 'ja_JP'],
-            ['4,000', 4.0, 'en_US'],
         ];
     }
 }

@@ -11,7 +11,7 @@ use Magento\Framework\Search\Request\FilterInterface as RequestFilterInterface;
 /**
  * Term filter builder.
  *
- * @deprecated 102.0.0
+ * @deprecated
  * @see \Magento\ElasticSearch
  */
 class Term implements FilterInterface

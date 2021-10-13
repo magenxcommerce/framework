@@ -5,12 +5,8 @@
  */
 namespace Magento\Framework\App\Request;
 
-use Magento\Framework\Api\SimpleDataObjectConverter;
 use Magento\Framework\Session\SessionManagerInterface;
 
-/**
- * Persist data to session.
- */
 class DataPersistor implements DataPersistorInterface
 {
     /**
@@ -36,7 +32,7 @@ class DataPersistor implements DataPersistorInterface
      */
     public function set($key, $data)
     {
-        $method = 'set' . SimpleDataObjectConverter::snakeCaseToUpperCamelCase($key) . 'Data';
+        $method = 'set' . ucfirst($key) . 'Data';
         call_user_func_array([$this->session, $method], [$data]);
     }
 
@@ -48,7 +44,7 @@ class DataPersistor implements DataPersistorInterface
      */
     public function get($key)
     {
-        $method = 'get' . SimpleDataObjectConverter::snakeCaseToUpperCamelCase($key) . 'Data';
+        $method = 'get' . ucfirst($key) . 'Data';
         return call_user_func_array([$this->session, $method], []);
     }
 
@@ -60,7 +56,7 @@ class DataPersistor implements DataPersistorInterface
      */
     public function clear($key)
     {
-        $method = 'uns' . SimpleDataObjectConverter::snakeCaseToUpperCamelCase($key) . 'Data';
+        $method = 'uns' . ucfirst($key) . 'Data';
         call_user_func_array([$this->session, $method], []);
     }
 }

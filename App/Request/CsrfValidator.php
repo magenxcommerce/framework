@@ -55,10 +55,8 @@ class CsrfValidator implements ValidatorInterface
     }
 
     /**
-     * Validate given request.
-     *
      * @param HttpRequest $request
-     * @param ActionInterface $action
+     * @param ActionInterface  $action
      *
      * @return bool
      */
@@ -72,7 +70,7 @@ class CsrfValidator implements ValidatorInterface
         }
         if ($valid === null) {
             $valid = !$request->isPost()
-                || $request->isXmlHttpRequest()
+                || $request->isAjax()
                 || $this->formKeyValidator->validate($request);
         }
 
@@ -80,8 +78,6 @@ class CsrfValidator implements ValidatorInterface
     }
 
     /**
-     * Create exception for when incoming request failed validation.
-     *
      * @param HttpRequest $request
      * @param ActionInterface $action
      *

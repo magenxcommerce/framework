@@ -85,7 +85,7 @@ class Timezone implements TimezoneInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getDefaultTimezonePath()
     {
@@ -93,7 +93,7 @@ class Timezone implements TimezoneInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getDefaultTimezone()
     {
@@ -101,7 +101,7 @@ class Timezone implements TimezoneInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getConfigTimezone($scopeType = null, $scopeCode = null)
     {
@@ -113,7 +113,7 @@ class Timezone implements TimezoneInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getDateFormat($type = \IntlDateFormatter::SHORT)
     {
@@ -125,7 +125,7 @@ class Timezone implements TimezoneInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getDateFormatWithLongYear()
     {
@@ -137,7 +137,7 @@ class Timezone implements TimezoneInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getTimeFormat($type = \IntlDateFormatter::SHORT)
     {
@@ -149,7 +149,7 @@ class Timezone implements TimezoneInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getDateTimeFormat($type)
     {
@@ -157,7 +157,7 @@ class Timezone implements TimezoneInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function date($date = null, $locale = null, $useTimezone = true, $includeTime = true)
     {
@@ -177,12 +177,12 @@ class Timezone implements TimezoneInterface
                 $timeType = $includeTime ? \IntlDateFormatter::SHORT : \IntlDateFormatter::NONE;
                 $formatter = new \IntlDateFormatter(
                     $locale,
-                    \IntlDateFormatter::MEDIUM,
+                    \IntlDateFormatter::SHORT,
                     $timeType,
                     new \DateTimeZone($timezone)
                 );
 
-                $date = $this->appendTimeIfNeeded($date, $includeTime, $timezone, $locale);
+                $date = $this->appendTimeIfNeeded($date, $includeTime);
                 $date = $formatter->parse($date) ?: (new \DateTime($date))->getTimestamp();
                 break;
         }
@@ -191,36 +191,20 @@ class Timezone implements TimezoneInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function scopeDate($scope = null, $date = null, $includeTime = false)
     {
-        $timezone = new \DateTimeZone(
-            $this->_scopeConfig->getValue($this->getDefaultTimezonePath(), $this->_scopeType, $scope)
-        );
-        switch (true) {
-            case (empty($date)):
-                $date = new \DateTime('now', $timezone);
-                break;
-            case ($date instanceof \DateTime):
-            case ($date instanceof \DateTimeImmutable):
-                $date = $date->setTimezone($timezone);
-                break;
-            default:
-                $date = new \DateTime(is_numeric($date) ? '@' . $date : $date);
-                $date->setTimezone($timezone);
-                break;
-        }
-
+        $timezone = $this->_scopeConfig->getValue($this->getDefaultTimezonePath(), $this->_scopeType, $scope);
+        $date = new \DateTime(is_numeric($date) ? '@' . $date : $date, new \DateTimeZone($timezone));
         if (!$includeTime) {
             $date->setTime(0, 0, 0);
         }
-
         return $date;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function formatDate($date = null, $format = \IntlDateFormatter::SHORT, $showTime = false)
     {
@@ -234,7 +218,7 @@ class Timezone implements TimezoneInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function scopeTimeStamp($scope = null)
     {
@@ -247,7 +231,7 @@ class Timezone implements TimezoneInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function isScopeDateInInterval($scope, $dateFrom = null, $dateTo = null)
     {
@@ -263,12 +247,23 @@ class Timezone implements TimezoneInterface
             $toTimeStamp += 86400;
         }
 
-        return !(!$this->_dateTime->isEmptyDate($dateFrom) && $scopeTimeStamp < $fromTimeStamp ||
-               !$this->_dateTime->isEmptyDate($dateTo) && $scopeTimeStamp > $toTimeStamp);
+        $result = false;
+        if (!$this->_dateTime->isEmptyDate($dateFrom) && $scopeTimeStamp < $fromTimeStamp) {
+        } elseif (!$this->_dateTime->isEmptyDate($dateTo) && $scopeTimeStamp > $toTimeStamp) {
+        } else {
+            $result = true;
+        }
+        return $result;
     }
 
     /**
-     * @inheritdoc
+     * @param string|\DateTimeInterface $date
+     * @param int $dateType
+     * @param int $timeType
+     * @param string|null $locale
+     * @param string|null $timezone
+     * @param string|null $pattern
+     * @return string
      */
     public function formatDateTime(
         $date,
@@ -304,7 +299,13 @@ class Timezone implements TimezoneInterface
     }
 
     /**
-     * @inheritdoc
+     * Convert date from config timezone to Utc.
+     * If pass \DateTime object as argument be sure that timezone is the same with config timezone
+     *
+     * @param string|\DateTimeInterface $date
+     * @param string $format
+     * @throws LocalizedException
+     * @return string
      */
     public function convertConfigTimeToUtc($date, $format = 'Y-m-d H:i:s')
     {
@@ -331,44 +332,16 @@ class Timezone implements TimezoneInterface
     }
 
     /**
-     * Append time to DateTime
+     * Retrieve date with time
      *
      * @param string $date
-     * @param boolean $includeTime
-     * @param string $timezone
-     * @param string $locale
+     * @param bool $includeTime
      * @return string
-     * @throws LocalizedException
      */
-    private function appendTimeIfNeeded($date, $includeTime, $timezone, $locale)
+    private function appendTimeIfNeeded($date, $includeTime)
     {
         if ($includeTime && !preg_match('/\d{1}:\d{2}/', $date)) {
-
-            $formatterWithoutHour = new \IntlDateFormatter(
-                $locale,
-                \IntlDateFormatter::MEDIUM,
-                \IntlDateFormatter::NONE,
-                new \DateTimeZone($timezone)
-            );
-            $convertedDate = $formatterWithoutHour->parse($date);
-
-            if (!$convertedDate) {
-                throw new LocalizedException(
-                    new Phrase(
-                        'Could not append time to DateTime'
-                    )
-                );
-
-            }
-
-            $formatterWithHour = new \IntlDateFormatter(
-                $locale,
-                \IntlDateFormatter::MEDIUM,
-                \IntlDateFormatter::SHORT,
-                new \DateTimeZone($timezone)
-            );
-
-            $date = $formatterWithHour->format($convertedDate);
+            $date .= " 0:00am";
         }
         return $date;
     }

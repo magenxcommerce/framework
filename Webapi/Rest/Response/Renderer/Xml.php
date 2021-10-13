@@ -7,9 +7,6 @@
  */
 namespace Magento\Framework\Webapi\Rest\Response\Renderer;
 
-/**
- * Renders response data in Xml format.
- */
 class Xml implements \Magento\Framework\Webapi\Rest\Response\RendererInterface
 {
     /**
@@ -88,7 +85,7 @@ class Xml implements \Magento\Framework\Webapi\Rest\Response\RendererInterface
         } else {
             $data = (array)$data;
         }
-        $isAssoc = !preg_match('/^\d+$/', implode('', array_keys($data)));
+        $isAssoc = !preg_match('/^\d+$/', implode(array_keys($data), ''));
 
         $formattedData = [];
         foreach ($data as $key => $value) {
@@ -114,7 +111,8 @@ class Xml implements \Magento\Framework\Webapi\Rest\Response\RendererInterface
             /** Without the following transformation boolean values are rendered incorrectly */
             $value = $value ? 'true' : 'false';
         }
-        return (string) $value;
+        $replacementMap = ['&' => '&amp;'];
+        return str_replace(array_keys($replacementMap), array_values($replacementMap), $value);
     }
 
     /**

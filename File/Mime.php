@@ -6,9 +6,6 @@
 
 namespace Magento\Framework\File;
 
-/**
- * Utility for mime type retrieval
- */
 class Mime
 {
     /**
@@ -64,7 +61,7 @@ class Mime
     /**
      * List of mime types that can be defined by file extension.
      *
-     * @var array
+     * @var array $defineByExtensionList
      */
     private $defineByExtensionList = [
         'txt'  => 'text/plain',
@@ -76,18 +73,6 @@ class Mime
         'json' => 'application/json',
         'xml'  => 'application/xml',
         'svg' => 'image/svg+xml',
-    ];
-
-    /**
-     * List of generic MIME types
-     *
-     * The file mime type should be detected by the file's extension if the native mime type is one of the listed below.
-     *
-     * @var array
-     */
-    private $genericMimeTypes = [
-        'application/x-empty',
-        'inode/x-empty',
     ];
 
     /**
@@ -121,7 +106,6 @@ class Mime
 
     /**
      * Get mime type by the native mime_content_type function.
-     *
      * Search for extended mime type if mime_content_type() returned 'application/octet-stream' or 'text/plain'
      *
      * @param string $file
@@ -132,11 +116,7 @@ class Mime
         $extension = $this->getFileExtension($file);
         $result = mime_content_type($file);
         if (isset($this->mimeTypes[$extension], $this->defineByExtensionList[$extension])
-            && (
-                strpos($result, 'text/') === 0
-                || strpos($result, 'image/svg') === 0
-                || in_array($result, $this->genericMimeTypes, true)
-            )
+            && (strpos($result, 'text/') === 0 || strpos($result, 'image/svg') === 0)
         ) {
             $result = $this->mimeTypes[$extension];
         }

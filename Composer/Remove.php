@@ -46,7 +46,7 @@ class Remove
             [
                 'command' => 'remove',
                 'packages' => $packages,
-                '--no-update-with-dependencies' => true,
+                '--no-update' => true,
             ]
         );
     }

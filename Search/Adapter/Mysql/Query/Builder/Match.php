@@ -3,8 +3,6 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
-
 namespace Magento\Framework\Search\Adapter\Mysql\Query\Builder;
 
 use Magento\Framework\DB\Helper\Mysql\Fulltext;
@@ -20,18 +18,15 @@ use Magento\Framework\Search\Adapter\Preprocessor\PreprocessorInterface;
  * MySQL search query match.
  *
  * @api
- * @deprecated 102.0.0
+ * @deprecated
  * @see \Magento\ElasticSearch
  * @since 100.0.2
  */
 class Match implements QueryInterface
 {
-    /**
-     * @var string
-     */
     const SPECIAL_CHARACTERS = '-+~/\\<>\'":*$#@()!,.?`=%&^';
 
-    const MINIMAL_CHARACTER_LENGTH = 1;
+    const MINIMAL_CHARACTER_LENGTH = 3;
 
     /**
      * @var string[]
@@ -123,7 +118,7 @@ class Match implements QueryInterface
     }
 
     /**
-     * Prepare query value for build function.
+     * Prepare query.
      *
      * @param string $queryValue
      * @param string $conditionType

@@ -5,9 +5,6 @@
  */
 namespace Magento\Framework\Cache\Backend;
 
-/**
- * Memcached cache model
- */
 class Memcached extends \Zend_Cache_Backend_Memcached implements \Zend_Cache_Backend_ExtendedInterface
 {
     /**
@@ -49,7 +46,7 @@ class Memcached extends \Zend_Cache_Backend_Memcached implements \Zend_Cache_Bac
      * Returns ID of a specific chunk on the basis of data's ID
      *
      * @param string $id    Main data's ID
-     * @param int $index Particular chunk number to return ID for
+     * @param int    $index Particular chunk number to return ID for
      * @return string
      */
     protected function _getChunkId($id, $index)
@@ -61,7 +58,7 @@ class Memcached extends \Zend_Cache_Backend_Memcached implements \Zend_Cache_Bac
      * Remove saved chunks in case something gone wrong (e.g. some chunk from the chain can not be found)
      *
      * @param string $id     ID of data's info cell
-     * @param int $chunks Number of chunks to remove (basically, the number after '{splitted}|')
+     * @param int    $chunks Number of chunks to remove (basically, the number after '{splitted}|')
      * @return null
      */
     protected function _cleanTheMess($id, $chunks)
@@ -87,7 +84,7 @@ class Memcached extends \Zend_Cache_Backend_Memcached implements \Zend_Cache_Bac
         if (is_string($data) && strlen($data) > $this->_options['slab_size']) {
             $dataChunks = str_split($data, $this->_options['slab_size']);
 
-            for ($i = 0, $count = count($dataChunks); $i < $count; $i++) {
+            for ($i = 0, $cnt = count($dataChunks); $i < $cnt; $i++) {
                 $chunkId = $this->_getChunkId($id, $i);
 
                 if (!parent::save($dataChunks[$i], $chunkId, $tags, $specificLifetime)) {
@@ -106,7 +103,7 @@ class Memcached extends \Zend_Cache_Backend_Memcached implements \Zend_Cache_Bac
      * Load data from memcached, glue from several chunks if it was splitted upon save.
      *
      * @param string $id                     @see \Zend_Cache_Backend_Memcached::load()
-     * @param bool $doNotTestCacheValidity @see \Zend_Cache_Backend_Memcached::load()
+     * @param bool   $doNotTestCacheValidity @see \Zend_Cache_Backend_Memcached::load()
      * @return bool|false|string
      */
     public function load($id, $doNotTestCacheValidity = false)

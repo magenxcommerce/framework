@@ -57,7 +57,7 @@ class QueueRepository
      * Get queue factory.
      *
      * @return QueueFactoryInterface
-     * @deprecated 103.0.0
+     * @deprecated 100.2.0
      */
     private function getQueueFactory()
     {

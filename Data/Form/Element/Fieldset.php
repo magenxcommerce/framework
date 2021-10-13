@@ -44,8 +44,7 @@ class Fieldset extends AbstractElement
      */
     public function getElementHtml()
     {
-        $html = $this->getBeforeElementHtml();
-        $html .= '<fieldset area-hidden="false" id="' . $this->getHtmlId() . '"' . $this->serialize(
+        $html = '<fieldset id="' . $this->getHtmlId() . '"' . $this->serialize(
             ['class']
         ) . $this->_getUiId() . '>' . "\n";
         if ($this->getLegend()) {

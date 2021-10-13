@@ -11,7 +11,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Phrase;
 
 /**
- * Exception for GraphQL to be thrown when entity does not exists
+ * Class GraphQlNoSuchEntityException
  */
 class GraphQlNoSuchEntityException extends NoSuchEntityException implements \GraphQL\Error\ClientAware
 {
@@ -37,7 +37,7 @@ class GraphQlNoSuchEntityException extends NoSuchEntityException implements \Gra
     }
 
     /**
-     * @inheritdoc
+     * {@inheritDoc}
      */
     public function isClientSafe() : bool
     {
@@ -45,7 +45,7 @@ class GraphQlNoSuchEntityException extends NoSuchEntityException implements \Gra
     }
 
     /**
-     * @inheritdoc
+     * {@inheritDoc}
      */
     public function getCategory() : string
     {

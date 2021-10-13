@@ -3,45 +3,35 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
-
-namespace Magento\Framework\Data\Test\Unit\Form\Element;
-
-use Magento\Framework\Data\Form\Element\CollectionFactory;
-use Magento\Framework\Data\Form\Element\Factory;
-use Magento\Framework\Data\Form\Element\Obscure;
-use Magento\Framework\DataObject;
-use Magento\Framework\Escaper;
-use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for \Magento\Framework\Data\Form\Element\Obscure
  */
-class ObscureTest extends TestCase
+namespace Magento\Framework\Data\Test\Unit\Form\Element;
+
+class ObscureTest extends \PHPUnit\Framework\TestCase
 {
-    /** @var ObjectManager */
-    private $objectManager;
+    /**
+     * @var \PHPUnit_Framework_MockObject_MockObject
+     */
+    protected $_objectManagerMock;
 
     /**
-     * @var Obscure
+     * @var \Magento\Framework\Data\Form\Element\Obscure
      */
     protected $_model;
 
-    protected function setUp(): void
+    protected function setUp()
     {
-        $factoryMock = $this->createMock(Factory::class);
-        $collectionFactoryMock = $this->createMock(CollectionFactory::class);
-        $this->objectManager = new ObjectManager($this);
-        $escaper = $this->objectManager->getObject(
-            Escaper::class
-        );
-        $this->_model = new Obscure(
+        $factoryMock = $this->createMock(\Magento\Framework\Data\Form\Element\Factory::class);
+        $collectionFactoryMock = $this->createMock(\Magento\Framework\Data\Form\Element\CollectionFactory::class);
+        $escaperMock = $this->createMock(\Magento\Framework\Escaper::class);
+        $this->_model = new \Magento\Framework\Data\Form\Element\Obscure(
             $factoryMock,
             $collectionFactoryMock,
-            $escaper
+            $escaperMock
         );
-        $formMock = new DataObject();
+        $formMock = new \Magento\Framework\DataObject();
         $formMock->getHtmlIdPrefix('id_prefix');
         $formMock->getHtmlIdPrefix('id_suffix');
         $this->_model->setForm($formMock);
@@ -62,9 +52,9 @@ class ObscureTest extends TestCase
     public function testGetEscapedValue()
     {
         $this->_model->setValue('Obscure Text');
-        $this->assertStringContainsString('value="******"', $this->_model->getElementHtml());
+        $this->assertContains('value="******"', $this->_model->getElementHtml());
         $this->_model->setValue('');
-        $this->assertStringContainsString('value=""', $this->_model->getElementHtml());
+        $this->assertContains('value=""', $this->_model->getElementHtml());
     }
 
     /**

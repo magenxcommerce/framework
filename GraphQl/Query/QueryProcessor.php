@@ -7,9 +7,12 @@ declare(strict_types=1);
 
 namespace Magento\Framework\GraphQl\Query;
 
+use GraphQL\Validator\DocumentValidator;
+use GraphQL\Validator\Rules\DisableIntrospection;
+use GraphQL\Validator\Rules\QueryDepth;
 use Magento\Framework\GraphQl\Exception\ExceptionFormatter;
-use Magento\Framework\GraphQl\Query\Resolver\ContextInterface;
 use Magento\Framework\GraphQl\Schema;
+use Magento\Framework\GraphQl\Query\Resolver\ContextInterface;
 
 /**
  * Wrapper for GraphQl execution of a schema
@@ -22,30 +25,11 @@ class QueryProcessor
     private $exceptionFormatter;
 
     /**
-     * @var QueryComplexityLimiter
+     * @param ExceptionFormatter $exceptionFormatter
      */
-    private $queryComplexityLimiter;
-
-    /**
-     * @var \Magento\Framework\GraphQl\Query\ErrorHandlerInterface
-     */
-    private $errorHandler;
-
-    /**
-     * @param ExceptionFormatter                                     $exceptionFormatter
-     * @param QueryComplexityLimiter                                 $queryComplexityLimiter
-     *
-     * @param \Magento\Framework\GraphQl\Query\ErrorHandlerInterface $errorHandler
-     * @SuppressWarnings(PHPMD.LongVariable)
-     */
-    public function __construct(
-        ExceptionFormatter $exceptionFormatter,
-        QueryComplexityLimiter $queryComplexityLimiter,
-        ErrorHandlerInterface $errorHandler
-    ) {
+    public function __construct(ExceptionFormatter $exceptionFormatter)
+    {
         $this->exceptionFormatter = $exceptionFormatter;
-        $this->queryComplexityLimiter = $queryComplexityLimiter;
-        $this->errorHandler = $errorHandler;
     }
 
     /**
@@ -66,9 +50,9 @@ class QueryProcessor
         string $operationName = null
     ) : array {
         if (!$this->exceptionFormatter->shouldShowDetail()) {
-            $this->queryComplexityLimiter->execute();
+            DocumentValidator::addRule(new QueryDepth(10));
+            DocumentValidator::addRule(new DisableIntrospection());
         }
-
         $rootValue = null;
         return \GraphQL\GraphQL::executeQuery(
             $schema,
@@ -77,11 +61,9 @@ class QueryProcessor
             $contextValue,
             $variableValues,
             $operationName
-        )->setErrorsHandler(
-            [$this->errorHandler, 'handle']
         )->toArray(
             $this->exceptionFormatter->shouldShowDetail() ?
-                \GraphQL\Error\Debug::INCLUDE_DEBUG_MESSAGE : false
+                \GraphQL\Error\Debug::INCLUDE_DEBUG_MESSAGE | \GraphQL\Error\Debug::INCLUDE_TRACE : false
         );
     }
 }

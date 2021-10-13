@@ -9,9 +9,6 @@ use Magento\Framework\Api\Search\SearchResultInterface;
 use Magento\Framework\Api\Search\DocumentFactory;
 use Magento\Framework\Api\Search\SearchResultFactory;
 
-/**
- * Builder for search response.
- */
 class SearchResponseBuilder
 {
     /**
@@ -38,8 +35,6 @@ class SearchResponseBuilder
     }
 
     /**
-     * Build search result by search response.
-     *
      * @param ResponseInterface $response
      * @return SearchResultInterface
      */
@@ -51,10 +46,7 @@ class SearchResponseBuilder
         $documents = iterator_to_array($response);
         $searchResult->setItems($documents);
         $searchResult->setAggregations($response->getAggregations());
-        $count = method_exists($response, 'getTotal')
-            ? $response->getTotal()
-            : count($documents);
-        $searchResult->setTotalCount($count);
+        $searchResult->setTotalCount(count($documents));
 
         return $searchResult;
     }
