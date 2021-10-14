@@ -9,7 +9,7 @@ declare(strict_types=1);
 namespace Magento\Framework\Webapi\Test\Unit\Validator;
 
 use Magento\Framework\Api\SearchCriteria;
-use Magento\Framework\Exception\InvalidArgumentException;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Webapi\Validator\SearchCriteriaValidator;
 use PHPUnit\Framework\TestCase;
 
@@ -30,7 +30,7 @@ class SearchCriteriaValidatorTest extends TestCase
 
     public function testFailsPageSizeWhenAboveMaxLimit()
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(LocalizedException::class);
         $this->expectErrorMessage('Maximum SearchCriteria pageSize is 3');
         $searchCriteria = new SearchCriteria();
         $validator = new SearchCriteriaValidator(3);
