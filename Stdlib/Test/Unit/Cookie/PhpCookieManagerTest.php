@@ -9,7 +9,6 @@ declare(strict_types=1);
 namespace {
 
     $mockTranslateSetCookie = false;
-    $mockTranslateHeader = false;
 }
 
 namespace Magento\Framework\Stdlib\Test\Unit\Cookie
@@ -125,18 +124,12 @@ namespace Magento\Framework\Stdlib\Test\Unit\Cookie
          */
         protected $cookieArray;
 
-        /**
-         * @var array
-         */
-        public static $outputHeaders = [];
-
         protected function setUp(): void
         {
             require_once __DIR__ . '/_files/setcookie_mock.php';
-            global $mockTranslateSetCookie, $mockTranslateHeader;
-            $mockTranslateSetCookie = true;
-            $mockTranslateHeader = true;
             $this->cookieArray = $_COOKIE;
+            global $mockTranslateSetCookie;
+            $mockTranslateSetCookie = true;
             self::$isSetCookieInvoked = false;
             $this->objectManager = new ObjectManager($this);
             $this->scopeMock = $this->getMockBuilder(CookieScopeInterface::class)
@@ -167,9 +160,7 @@ namespace Magento\Framework\Stdlib\Test\Unit\Cookie
         protected function tearDown(): void
         {
             global $mockTranslateSetCookie;
-            global $mockTranslateHeader;
             $mockTranslateSetCookie = false;
-            $mockTranslateHeader = false;
             $_COOKIE = $this->cookieArray = $_COOKIE;
         }
 
@@ -237,9 +228,8 @@ namespace Magento\Framework\Stdlib\Test\Unit\Cookie
 
         public function testDeleteCookieWithFailureToSendException()
         {
-            global $mockTranslateHeader;
             self::$isSetCookieInvoked = false;
-            $mockTranslateHeader = false;
+
             $cookieMetadata = $this->objectManager->getObject(CookieMetadata::class);
             $this->scopeMock->expects($this->once())
                 ->method('getCookieMetadata')
@@ -575,7 +565,10 @@ namespace Magento\Framework\Stdlib\Test\Unit\Cookie
                 ->method('warning')
                 ->with(
                     new Phrase('Unable to send the cookie. Maximum number of cookies would be exceeded.'),
-                    array_merge($_COOKIE, ['user-agent' => $userAgent])
+                    [
+                        'cookies' => $_COOKIE,
+                        'user-agent' => $userAgent
+                    ]
                 );
 
             $this->cookieManager->setPublicCookie(
@@ -620,7 +613,6 @@ namespace Magento\Framework\Stdlib\Test\Unit\Cookie
             $httpOnly,
             $sameSite
         ) {
-
             self::assertEquals(self::DELETE_COOKIE_NAME, $name);
             self::assertEquals('', $value);
             self::assertEquals($expiry, PhpCookieManager::EXPIRE_NOW_TIME);
@@ -647,7 +639,6 @@ namespace Magento\Framework\Stdlib\Test\Unit\Cookie
             $httpOnly,
             $sameSite
         ) {
-
             self::assertEquals(self::DELETE_COOKIE_NAME_NO_METADATA, $name);
             self::assertEquals('', $value);
             self::assertEquals($expiry, PhpCookieManager::EXPIRE_NOW_TIME);
@@ -674,7 +665,6 @@ namespace Magento\Framework\Stdlib\Test\Unit\Cookie
             $httpOnly,
             $sameSite
         ) {
-
             self::assertEquals(self::SENSITIVE_COOKIE_NAME_NO_METADATA_HTTPS, $name);
             self::assertEquals(self::COOKIE_VALUE, $value);
             self::assertEquals(PhpCookieManager::EXPIRE_AT_END_OF_SESSION_TIME, $expiry);
@@ -922,23 +912,6 @@ namespace Magento\Framework\Stdlib\Test\Unit\Cookie
             $exceptionMessage = 'Invalid argument provided for SameSite directive expected one of: Strict, Lax or None';
             $this->expectExceptionMessage($exceptionMessage);
             $cookieMetadata->setSameSite('default value');
-        }
-
-        /**
-         * Test Set SameSite None with Insecure cookies
-         *
-         * @return void
-         */
-        public function testSetSameSiteNone(): void
-        {
-            /** @var \Magento\Framework\Stdlib\Cookie\PublicCookieMetadata $cookieMetadata */
-            $cookieMetadata = $this->objectManager->getObject(
-                CookieMetadata::class
-            );
-            $this->expectException('InvalidArgumentException');
-            $this->expectExceptionMessage('Cookie must be secure in order to use the SameSite None directive.');
-            $cookieMetadata->setSameSite('None');
-            $cookieMetadata->setSecure(false);
         }
     }
 }

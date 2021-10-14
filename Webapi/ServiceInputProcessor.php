@@ -23,14 +23,13 @@ use Magento\Framework\Reflection\MethodsMap;
 use Magento\Framework\Reflection\TypeProcessor;
 use Magento\Framework\Webapi\Exception as WebapiException;
 use Magento\Framework\Webapi\CustomAttribute\PreprocessorInterface;
+use Laminas\Code\Reflection\ClassReflection;
 use Magento\Framework\Webapi\Validator\ServiceInputValidatorInterface;
-use Zend\Code\Reflection\ClassReflection;
 
 /**
  * Deserialize arguments from API requests.
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- * @SuppressWarnings(PHPMD.ExcessiveParameterList)
  * @api
  * @since 100.0.2
  */
@@ -253,7 +252,6 @@ class ServiceInputProcessor implements ServicePayloadConverterInterface
      * @throws \Exception
      * @throws SerializationException
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     protected function _createFromArray($className, $data)
     {

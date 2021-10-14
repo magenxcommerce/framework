@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace Magento\Framework\Webapi\Test\Unit\Validator;
 
-use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\InvalidArgumentException;
 use Magento\Framework\Webapi\Validator\EntityArrayValidator;
 use PHPUnit\Framework\TestCase;
 
@@ -28,7 +28,7 @@ class EntityArrayValidatorTest extends TestCase
 
     public function testFailsDataWhenAboveLimit()
     {
-        $this->expectException(LocalizedException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectErrorMessage('Maximum items of type "foo" is 3');
         $validator = new EntityArrayValidator(3);
         $validator->validateComplexArrayType("foo", [[],[],[],[]]);

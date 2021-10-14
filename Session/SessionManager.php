@@ -215,6 +215,8 @@ class SessionManager implements SessionManagerInterface
 
                 $this->_addHost();
                 \Magento\Framework\Profiler::stop('session_start');
+            } else {
+                $this->validator->validate($this);
             }
             // phpstan:ignore
             $this->storage->init(isset($_SESSION) ? $_SESSION : []);
@@ -621,7 +623,9 @@ class SessionManager implements SessionManagerInterface
         }
 
         foreach ($this->sessionConfig->getOptions() as $option => $value) {
-            if ($option=='session.save_handler') {
+            // Since PHP 7.2 it is explicitly forbidden to set the module name to "user".
+            // https://bugs.php.net/bug.php?id=77384
+            if ($option === 'session.save_handler' && $value !== 'memcached') {
                 continue;
             } else {
                 $result = ini_set($option, $value);

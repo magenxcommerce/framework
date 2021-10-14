@@ -3,6 +3,7 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Framework\Session;
 
 use Magento\Framework\Exception\LocalizedException;
@@ -11,7 +12,7 @@ use Magento\Framework\Session\Config\ConfigInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Magento session save handler
+ * Magento session save handler.
  */
 class SaveHandler implements SaveHandlerInterface
 {
@@ -69,7 +70,7 @@ class SaveHandler implements SaveHandlerInterface
     }
 
     /**
-     * Open Session - retrieve resources
+     * Open Session - retrieve resources.
      *
      * @param string $savePath
      * @param string $name
@@ -81,7 +82,7 @@ class SaveHandler implements SaveHandlerInterface
     }
 
     /**
-     * Close Session - free resources
+     * Close Session - free resources.
      *
      * @return bool
      */
@@ -91,7 +92,7 @@ class SaveHandler implements SaveHandlerInterface
     }
 
     /**
-     * Read session data
+     * Read session data.
      *
      * @param string $sessionId
      * @return string
@@ -102,7 +103,7 @@ class SaveHandler implements SaveHandlerInterface
     }
 
     /**
-     * Write Session - commit data to resource
+     * Write Session - commit data to resource.
      *
      * @param string $sessionId
      * @param string $data
@@ -130,7 +131,7 @@ class SaveHandler implements SaveHandlerInterface
     }
 
     /**
-     * Destroy Session - remove data from resource for given session id
+     * Destroy Session - remove data from resource for given session id.
      *
      * @param string $sessionId
      * @return bool
@@ -141,7 +142,7 @@ class SaveHandler implements SaveHandlerInterface
     }
 
     /**
-     * Garbage Collection - remove old session data older than $maxLifetime (in seconds)
+     * Garbage Collection - remove old session data older than $maxLifetime (in seconds).
      *
      * @param int $maxLifetime
      * @return bool

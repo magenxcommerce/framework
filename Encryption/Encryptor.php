@@ -156,11 +156,7 @@ class Encryptor implements EncryptorInterface
      */
     public function getLatestHashVersion(): int
     {
-        if (extension_loaded('sodium') && defined('SODIUM_CRYPTO_PWHASH_ALG_ARGON2ID13')) {
-            return self::HASH_VERSION_ARGON2ID13;
-        }
-
-        return self::HASH_VERSION_SHA256;
+        return self::HASH_VERSION_ARGON2ID13_AGNOSTIC;
     }
 
     /**
@@ -219,14 +215,12 @@ class Encryptor implements EncryptorInterface
         }
 
         if ($isArgon) {
-            //phpcs:disable PHPCompatibility.Constants.NewConstants
             $seedBytes = SODIUM_CRYPTO_SIGN_SEEDBYTES;
             $opsLimit = SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE;
             $memLimit = SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE;
             if ($version === self::HASH_VERSION_ARGON2ID13_AGNOSTIC) {
                 $version = implode('_', [self::HASH_VERSION_ARGON2ID13_AGNOSTIC, $seedBytes, $opsLimit, $memLimit]);
             }
-            //phpcs:enable PHPCompatibility.Constants.NewConstants
 
             $hash = $this->getArgonHash($password, $seedBytes, $opsLimit, $memLimit, $salt);
         } else {
@@ -304,7 +298,6 @@ class Encryptor implements EncryptorInterface
                         $hashSalt
                     );
                 } elseif ((int)$hashVersion === self::HASH_VERSION_ARGON2ID13) {
-                    //phpcs:disable PHPCompatibility.Constants.NewConstants
                     $recreated = $this->getArgonHash(
                         $recreated,
                         SODIUM_CRYPTO_SIGN_SEEDBYTES,
@@ -312,7 +305,6 @@ class Encryptor implements EncryptorInterface
                         SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE,
                         $hashSalt
                     );
-                    //phpcs:enable PHPCompatibility.Constants.NewConstants
                 } else {
                     $recreated = $this->generateSimpleHash($hashSalt . $recreated, (int)$hashVersion);
                 }
@@ -346,7 +338,7 @@ class Encryptor implements EncryptorInterface
                 end($hashVersions)
             );
         } else {
-            $validVersion = (int)end($hashVersions) === $this->getLatestHashVersion();
+            $validVersion = end($hashVersions) === $this->getLatestHashVersion();
         }
 
         return $validVersion && (!$validateCount || count($hashVersions) === 1);
@@ -565,11 +557,7 @@ class Encryptor implements EncryptorInterface
      */
     private function getCipherVersion()
     {
-        if (extension_loaded('sodium')) {
-            return $this->cipher;
-        } else {
-            return self::CIPHER_RIJNDAEL_256;
-        }
+        return $this->cipher;
     }
 
     /**
@@ -590,8 +578,6 @@ class Encryptor implements EncryptorInterface
         int $memLimit,
         string $salt
     ): string {
-        //phpcs:disable PHPCompatibility.Constants.NewConstants
-        //phpcs:disable PHPCompatibility.FunctionUse.NewFunctions
         if (strlen($salt) < SODIUM_CRYPTO_PWHASH_SALTBYTES) {
             $salt = str_pad($salt, SODIUM_CRYPTO_PWHASH_SALTBYTES, $salt);
         } elseif (strlen($salt) > SODIUM_CRYPTO_PWHASH_SALTBYTES) {
@@ -608,7 +594,5 @@ class Encryptor implements EncryptorInterface
                 SODIUM_CRYPTO_PWHASH_ALG_ARGON2ID13
             )
         );
-        //phpcs:enable PHPCompatibility.FunctionUse.NewFunctions
-        //phpcs:enable PHPCompatibility.Constants.NewConstants
     }
 }

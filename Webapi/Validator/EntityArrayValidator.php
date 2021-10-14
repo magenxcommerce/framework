@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace Magento\Framework\Webapi\Validator;
 
-use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\InvalidArgumentException;
 
 /**
  * Validates service input
@@ -34,7 +34,7 @@ class EntityArrayValidator implements ServiceInputValidatorInterface
     public function validateComplexArrayType(string $className, array $items): void
     {
         if (count($items) > $this->complexArrayItemLimit) {
-            throw new LocalizedException(
+            throw new InvalidArgumentException(
                 __(
                     'Maximum items of type "%type" is %max',
                     ['type' => $className, 'max' => $this->complexArrayItemLimit]

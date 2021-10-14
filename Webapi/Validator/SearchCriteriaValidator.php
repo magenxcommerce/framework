@@ -9,7 +9,7 @@ declare(strict_types=1);
 namespace Magento\Framework\Webapi\Validator;
 
 use Magento\Framework\Api\SearchCriteriaInterface;
-use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\InvalidArgumentException;
 
 /**
  * Validates search criteria inputs
@@ -46,7 +46,7 @@ class SearchCriteriaValidator implements ServiceInputValidatorInterface
             && $propertyName === 'pageSize'
             && $value > $this->maximumPageSize
         ) {
-            throw new LocalizedException(
+            throw new InvalidArgumentException(
                 __('Maximum SearchCriteria pageSize is %max', ['max' => $this->maximumPageSize])
             );
         }

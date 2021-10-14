@@ -8,9 +8,6 @@
 
 namespace Magento\Framework\Filter\Input;
 
-/**
- * Class responsible for filtering malicious code.
- */
 class MaliciousCode implements \Zend_Filter_Interface
 {
     /**
